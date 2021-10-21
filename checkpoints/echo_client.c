@@ -14,6 +14,9 @@ const char* message = "hello\n"
 #define MSG_LEN 15000
 char message_buf[MSG_LEN];
 
+/* fill the message_buf with message, and pad the last space with a,b,c...
+ * message_buf is full with MSG_LEN.
+ */
 void populate_buf() {
   int i;
   int message_len = strlen(message);
@@ -66,13 +69,16 @@ void cli_client(const char* addr, int sleep_) {
 }
 
 int main(int argc, char *argv[]) {
+
   int loop;
   
-  if (argc != 2) {
+  if (argc != 2) { // ask one argument: ip address.
     printf("usage: %s <IPaddress>\n", argv[0]);
     return -1;
   }
-  
+
+  printf("ip address: %s\n", argv[1]);
+
   for (loop = 0; loop < 3; loop++) {
     cli_client(argv[1], loop==0);
     printf("loop #%d ok.\n", loop + 1);

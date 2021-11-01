@@ -37,12 +37,15 @@ int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id
         fprintf(stderr,"\nUnable to malloc the buffer.\n");
         return -1;
     }
+
+
     for (int i = 0; i < 6; ++i) buffer[i] = *((u_char *)destmac + i);
     for (int i = 6; i < 12; ++i) buffer[i] = (device_list[id] -> mac >> 8*(11-i)) & 255;
     
-    for (int i = 0; i < 6; ++i) printf("%02x.", buffer[i]);
-    printf("\n");
-
+    // for (int i = 0; i < 6; ++i) printf("%02x.", buffer[i]);
+    // printf("\n");
+    // for (int i = 6; i < 12; ++i) printf("%02x.", buffer[i]);
+    // printf("\n");
 
 
     buffer[12] = (ethtype >> 8) & 255;
@@ -53,6 +56,10 @@ int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id
         fprintf(stderr,"\nSend packets error.\n");
         return -1;
     }
+    pcap_close(handle);
+    free(buffer);
+
+    printf("have sent the packet.\n");
     return 0;
 }
 
@@ -100,26 +107,43 @@ int setFrameReceiveCallback(frameReceiveCallback callback, int id) {
     pcap_t *handle;
     open_pcap_dev(&handle, device_list[id] -> name, errbuf);
 
-    // printf("%d\n", pcap_next_ex(handle, &header, (const u_char **)&buf));
     int x = PCAP_ERROR;
+    // int pcap_set_timeout(pcap_t *p, int to_ms);
+
     while (pcap_next_ex(handle, &header, (const u_char **)&buf) == 1) {
+        puts("packet received!!!");
         callback(buf, header -> len, id);
-        return 0;
     }
+    printf("wrong !!!\n");
+    exit(0);
+    pcap_close(handle);
+
     return -1;
 }
 
 
-int callback_example(const void *buf, int len, int id) {
+/*
+ * @brief Process an IP packet upon receiving it.
+ * 
+ * @param buf Pointer to the packet. 
+ * @param len Length of the packet.
+ * @return 0 on success, -1 on error.
+ * @see addDevice 
+ */
+typedef int (*IPPacketReceiveCallback)(const void* buf, int len);
+IPPacketReceiveCallback IPPakcetCallback;
+
+int frameCallbackExample(const void *buf, int len, int id) {
     #define rep(i,l,r) for(int i=l;i<=r;++i)
-    printf("Dst address: ");
+    printf("Dst mac address: ");
     rep(i,0,5) printf("%02x.", *((u_char *)buf+i));
     puts("");
-    printf("Src address: ");
-    rep(i,0,5) printf("%02x.", *((u_char *)buf+i));
+    printf("Src mac address: ");
+    rep(i,6,11) printf("%02x.", *((u_char *)buf+i));
     puts("");
-    printf("data length: %d\n", len-14);
-    puts("");
+
+    IPPakcetCallback(buf, len);
+    return 0;
 }
 
 

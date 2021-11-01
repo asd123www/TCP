@@ -17,6 +17,7 @@ struct net_device {
     uint64_t mac;
 };
 
+int device_num;
 struct net_device *device_list[MAX_DEVICE_NUMBER];
 
 /**
@@ -44,7 +45,6 @@ int findDevice(const char *device) {
 }
 
 int addDevice(const char* device) {
-    static int total = 0;
 
     static pcap_if_t *head;
     // struct pcap_addr t;
@@ -54,9 +54,9 @@ int addDevice(const char* device) {
     }
 
     for (pcap_if_t *iter = head; iter != NULL; iter = iter->next) {
+        // printf("name: %s\n", iter->name);
         if (strcmp(iter->name, device) != 0) continue;
 
-        // printf("name: %s\n", iter->name);
         struct net_device *ptr = (struct net_device *)malloc(sizeof(struct net_device));
         if (ptr == NULL) {
             fprintf(stderr,"\nUnable to malloc the ptr.\n");
@@ -85,15 +85,10 @@ int addDevice(const char* device) {
                     ptr -> mac <<= 8;
                     ptr -> mac |= i->addr->sa_data[j] & 255;
                 }
-                // printf("address: ");
-                // for (int j=1; j<7; ++j) {
-                //     printf("%02lx.", ptr->mac >> ((6-j)*8) & 255);
-                // }
-                // puts("");
             }
         }
 
-        device_list[total++] = ptr;
+        device_list[device_num++] = ptr;
         return 1;
     }
     return -1;
@@ -120,8 +115,80 @@ void test() {
     b[6] = '\0';
     printf("state: %d\n\n", addDevice(b));
 
+
+    b[0] = 'v';
+    b[1] = 'e';
+    b[2] = 't';
+    b[3] = 'h';
+    b[4] = '1';
+    b[5] = '-';
+    b[6] = '2';
+    b[7] = '\0';
+    printf("state: %d\n\n", addDevice(b));
+
+
+    b[0] = 'v';
+    b[1] = 'e';
+    b[2] = 't';
+    b[3] = 'h';
+    b[4] = '2';
+    b[5] = '-';
+    b[6] = '1';
+    b[7] = '\0';
+    printf("state: %d\n\n", addDevice(b));
+
+    b[0] = 'v';
+    b[1] = 'e';
+    b[2] = 't';
+    b[3] = 'h';
+    b[4] = '2';
+    b[5] = '-';
+    b[6] = '3';
+    b[7] = '\0';
+    printf("state: %d\n\n", addDevice(b));
+
+    b[0] = 'v';
+    b[1] = 'e';
+    b[2] = 't';
+    b[3] = 'h';
+    b[4] = '3';
+    b[5] = '-';
+    b[6] = '0';
+    b[7] = '\0';
+    printf("state: %d\n\n", addDevice(b));
+
+    b[0] = 'v';
+    b[1] = 'e';
+    b[2] = 't';
+    b[3] = 'h';
+    b[4] = '3';
+    b[5] = '-';
+    b[6] = '2';
+    b[7] = '\0';
+    printf("state: %d\n\n", addDevice(b));
+
+    b[0] = 'v';
+    b[1] = 'e';
+    b[2] = 't';
+    b[3] = 'h';
+    b[4] = '3';
+    b[5] = '-';
+    b[6] = '4';
+    b[7] = '\0';
+    printf("state: %d\n\n", addDevice(b));
+
+     b[0] = 'v';
+    b[1] = 'e';
+    b[2] = 't';
+    b[3] = 'h';
+    b[4] = '4';
+    b[5] = '-';
+    b[6] = '3';
+    b[7] = '\0';
+    printf("state: %d\n\n", addDevice(b));
+
     printf("------------------------\n\n\n");
 
-    printf("name: %s\n", device_list[findDevice(a)]->name);
-    printf("name: %s\n", device_list[findDevice(b)]->name);
+    // printf("name: %s\n", device_list[findDevice(a)]->name);
+    // printf("name: %s\n", device_list[findDevice(b)]->name);
 }

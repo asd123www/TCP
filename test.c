@@ -21,7 +21,8 @@ void printOutRouterTable(int n) {
  * WARNING: the sleep is not accurate for the non-guaranteed kernel scheduling
  */
 void* packetSenderThreadRouterFunction() {
-    int device = 0;
+    memset(edge, 0x3f, sizeof(edge));
+    edge[0][0] = 0;
 
     //sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id);
     char buf[100];
@@ -34,7 +35,6 @@ void* packetSenderThreadRouterFunction() {
         sync_printf("new iteration:\n");
         // int sendIPPacket(const struct in_addr src, const struct in_addr dest, int proto, const void *buf, int len) {
         // src.s_addr = (172<<24) | (16<<16) | (140<<8) | 2;
-        setEdgeEntry(0x3f, -1, -1);
 
         for (int device = 0; device < device_num; ++device) {
             src.s_addr = device_list[device] -> ip;
@@ -66,10 +66,11 @@ void* packetSenderThreadRouterFunction() {
         }
         sync_printf("Finished broadcasting directly connected message.\n");
         sleep(5);
-
+        
         sync_printf("subnet number: %d\n", subnet_num);
         Dijkstra(subnet_num + 1);
         printOutRouterTable(subnet_num);
+        setEdgeEntry(0x3f, -1, -1);
         sync_printf("\n\n\n\n");
     }
 }

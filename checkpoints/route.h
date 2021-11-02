@@ -18,22 +18,22 @@ int dist[MAX_ROUTER_NUM][MAX_ROUTER_NUM];
  */
 void Dijkstra(int n);
 
-
-
 void setEdgeEntry(int value, int i, int j) {
     pthread_mutex_lock(&edgeEntryLock);
     if(i == -1 && j == -1) {
         memset(edge, value, sizeof(edge));
-        for(int i = 0; i < MAX_ROUTER_NUM; ++i) edge[i][i] = 0;
+        // for(int i = 0; i < MAX_ROUTER_NUM; ++i) edge[i][i] = 0;
     }
     else {
         edge[i][j] = value;
         edge[j][i] = value;
+        edge[i][i] = edge[j][j] = edge[0][0] =0;
     }
     pthread_mutex_unlock(&edgeEntryLock);
 }
 
 void Dijkstra(int n) {
+    if(edge[0][0] != 0) return;  // no update.
     memset(dist, 0x3f, sizeof(dist));
     for(int i = 0; i < n; ++i)
         for(int j = 0; j < n; ++j) 

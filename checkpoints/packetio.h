@@ -116,8 +116,8 @@ int setFrameReceiveCallback(frameReceiveCallback callback, int id) {
     while (1) {
         int state = pcap_next_ex(handle, &header, (const u_char **)&buf);
         if(state != 1) continue;
-        
-        // sync_printf("packet received time: %\n");
+
+        // sync_printf("packet received\n");
         callback(buf, header -> len, id);
         // sync_printf("packet processed!!!\n");
         // sync_printf("");
@@ -156,6 +156,7 @@ int frameCallbackExample(const void *buf, int len, int id) {
 
 int open_pcap_dev(pcap_t **result, const char* name, char* errbuf) {
 	pcap_t* handle = pcap_create(name, errbuf);
+    pcap_set_immediate_mode(handle,1);
 	if (handle) {
         // pcap_set_rfmon(handle, 1);
         // pcap_set_snaplen(handle, 2048);

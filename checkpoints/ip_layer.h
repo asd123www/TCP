@@ -12,7 +12,7 @@
 // #define subnet_prefix(x, len) \
 //     do { (x & (((1 << len) - 1) << (32 - len))) } while(0)
 
-struct subnet{
+struct subnet {
     int length;
     uint32_t addr;
     uint32_t mask;

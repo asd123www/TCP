@@ -8,22 +8,16 @@
 #include <string.h>
 
 
-pthread_mutex_t edgeEntryLock;
+pthread_mutex_t edgeEntryLock = PTHREAD_MUTEX_INITIALIZER;
 int edge[MAX_ROUTER_NUM][MAX_ROUTER_NUM];
 int dist[MAX_ROUTER_NUM][MAX_ROUTER_NUM];
 
-/* 
+/*
  * floyd algorithm find shortest path.
  *
  */
 void Dijkstra(int n);
 
-/* 
- * easy implement of longest prefix match algo.
- * time complexity is O(n), n is the # of subnets.
- * easy to optimize to O(\log n) by 0/1 trie, but not necessary.
- */
-struct subnet* longestPrefixMatch(struct subnet *lst, uint32_t ip);
 
 
 void setEdgeEntry(int value, int i, int j) {
@@ -49,13 +43,4 @@ void Dijkstra(int n) {
             for(int j = 0; j < n; ++j) 
                 dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
     return;
-}
-
-struct subnet* longestPrefixMatch(struct subnet *lst, uint32_t ip) {
-    struct subnet *ans = NULL;
-    for(struct subnet *idx = lst; idx != NULL; idx = idx -> nxt) {
-        if ((idx -> addr & idx -> mask) != (ip & idx -> mask)) continue;
-        if (ans == NULL || ans -> length < idx -> length) ans = idx;
-    }
-    return ans;
 }

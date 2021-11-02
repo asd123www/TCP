@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <netinet/ether.h>
+#include <time.h>
 
 #include "device.h"
 /**
@@ -34,7 +35,7 @@ int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id
 
     u_char *buffer = (u_char *)malloc(len + 14);
     if (buffer == NULL) {
-        fprintf(stderr,"\nUnable to malloc the buffer.\n");
+        // fprintf(stderr,"\nUnable to malloc the buffer.\n");
         return -1;
     }
 
@@ -42,24 +43,26 @@ int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id
     for (int i = 0; i < 6; ++i) buffer[i] = *((u_char *)destmac + i);
     for (int i = 6; i < 12; ++i) buffer[i] = (device_list[id] -> mac >> 8*(11-i)) & 255;
     
-    // for (int i = 0; i < 6; ++i) printf("%02x.", buffer[i]);
-    // printf("\n");
-    // for (int i = 6; i < 12; ++i) printf("%02x.", buffer[i]);
-    // printf("\n");
-
+    // for (int i = 0; i < 6; ++i) sync_printf("%02x.", buffer[i]);
+    // sync_printf("\n");
+    // for (int i = 6; i < 12; ++i) sync_printf("%02x.", buffer[i]);
+    // sync_printf("\n");
 
     buffer[12] = (ethtype >> 8) & 255;
     buffer[13] = ethtype & 255;
     for (int i = 0; i < len; ++i) buffer[i+14] = *((u_char *)buf + i);
 
+    // sync_printf("length: %d\n", len);
+    // for (int i = 0; i < 34; ++i)  sync_printf("%02x ", buffer[i]);
+
     if(pcap_sendpacket(handle, buffer, len + 14) != 0) { // send err.
-        fprintf(stderr,"\nSend packets error.\n");
+        // fprintf(stderr,"\nSend packets error.\n");
         return -1;
     }
     pcap_close(handle);
     free(buffer);
 
-    printf("have sent the packet.\n");
+    // printf("have sent the packet.\n");
     return 0;
 }
 
@@ -107,14 +110,19 @@ int setFrameReceiveCallback(frameReceiveCallback callback, int id) {
     pcap_t *handle;
     open_pcap_dev(&handle, device_list[id] -> name, errbuf);
 
-    int x = PCAP_ERROR;
+    // int x = PCAP_ERROR;
     // int pcap_set_timeout(pcap_t *p, int to_ms);
 
-    while (pcap_next_ex(handle, &header, (const u_char **)&buf) == 1) {
-        puts("packet received!!!");
+    while (1) {
+        int state = pcap_next_ex(handle, &header, (const u_char **)&buf);
+        if(state != 1) continue;
+        
+        // sync_printf("packet received time: %\n");
         callback(buf, header -> len, id);
+        // sync_printf("packet processed!!!\n");
+        // sync_printf("");
     }
-    printf("wrong !!!\n");
+    sync_printf("wrong !!!\n");
     exit(0);
     pcap_close(handle);
 
@@ -130,22 +138,21 @@ int setFrameReceiveCallback(frameReceiveCallback callback, int id) {
  * @return 0 on success, -1 on error.
  * @see addDevice 
  */
-typedef int (*IPPacketReceiveCallback)(const void* buf, int len);
+typedef int (*IPPacketReceiveCallback)(const void* buf, int len, int device);
 IPPacketReceiveCallback IPPakcetCallback;
 
 int frameCallbackExample(const void *buf, int len, int id) {
     #define rep(i,l,r) for(int i=l;i<=r;++i)
-    printf("Dst mac address: ");
-    rep(i,0,5) printf("%02x.", *((u_char *)buf+i));
-    puts("");
-    printf("Src mac address: ");
-    rep(i,6,11) printf("%02x.", *((u_char *)buf+i));
-    puts("");
+    // printf("Dst mac address: ");
+    // rep(i,0,5) printf("%02x.", *((u_char *)buf+i));
+    // puts("");
+    // printf("Src mac address: ");
+    // rep(i,6,11) printf("%02x.", *((u_char *)buf+i));
+    // puts("");
 
-    IPPakcetCallback(buf, len);
+    IPPakcetCallback(buf, len, id);
     return 0;
 }
-
 
 int open_pcap_dev(pcap_t **result, const char* name, char* errbuf) {
 	pcap_t* handle = pcap_create(name, errbuf);
@@ -158,7 +165,7 @@ int open_pcap_dev(pcap_t **result, const char* name, char* errbuf) {
         int status;
         status = pcap_activate(handle);
         // printf("wrong status: %d\n", status);
-        
+
         // char *err = pcap_geterr(handle);
         // for (int i=0;i<50;++i)
         //     putchar(*(err+i));

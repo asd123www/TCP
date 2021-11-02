@@ -5,10 +5,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <pcap/pcap.h>
 
 #define MAX_DEVICE_NUMBER 10
 char errbuf[PCAP_ERRBUF_SIZE];
+pthread_mutex_t printfMutex = PTHREAD_MUTEX_INITIALIZER;
+
 
 struct net_device {
     char *name;
@@ -19,6 +22,12 @@ struct net_device {
 
 int device_num;
 struct net_device *device_list[MAX_DEVICE_NUMBER];
+
+uint64_t uchar2int64Mac(u_char *buf) {
+    uint64_t ans = 0;
+    for(int i = 0; i < 6; ++i) ans = ans << 8 | (((u_char *)buf)[i]);
+    return ans;
+}
 
 /**
  * Add a device to the library for sending/receiving packets.
@@ -59,12 +68,12 @@ int addDevice(const char* device) {
 
         struct net_device *ptr = (struct net_device *)malloc(sizeof(struct net_device));
         if (ptr == NULL) {
-            fprintf(stderr,"\nUnable to malloc the ptr.\n");
+            // fprintf(stderr,"\nUnable to malloc the ptr.\n");
             return -1;
         }
         ptr -> name = (char *)malloc(sizeof(device));
         if (ptr -> name == NULL) {
-            fprintf(stderr,"\nUnable to malloc the name.\n");
+            // fprintf(stderr,"\nUnable to malloc the name.\n");
             return -1;
         }
         strcpy(ptr -> name, device);
@@ -95,6 +104,18 @@ int addDevice(const char* device) {
 }
 
 
+int sync_printf(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    pthread_mutex_lock(&printfMutex);
+    vprintf(format, args);
+    fflush(stdout);
+    pthread_mutex_unlock(&printfMutex);
+
+    va_end(args);
+}
+
 void test() {
     char a[20];
     char b[20];
@@ -104,7 +125,7 @@ void test() {
     a[3] = '3';
     a[4] = '3';
     a[5] = '\0';
-    printf("state: %d\n\n", addDevice(a));
+    sync_printf("state: %d\n\n", addDevice(a));
 
     b[0] = 'v';
     b[1] = 'i';
@@ -113,7 +134,7 @@ void test() {
     b[4] = 'r';
     b[5] = '0';
     b[6] = '\0';
-    printf("state: %d\n\n", addDevice(b));
+    sync_printf("state: %d\n\n", addDevice(b));
 
 
     b[0] = 'v';
@@ -124,7 +145,7 @@ void test() {
     b[5] = '-';
     b[6] = '2';
     b[7] = '\0';
-    printf("state: %d\n\n", addDevice(b));
+    sync_printf("state: %d\n\n", addDevice(b));
 
 
     b[0] = 'v';
@@ -135,7 +156,7 @@ void test() {
     b[5] = '-';
     b[6] = '1';
     b[7] = '\0';
-    printf("state: %d\n\n", addDevice(b));
+    sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -145,7 +166,7 @@ void test() {
     b[5] = '-';
     b[6] = '3';
     b[7] = '\0';
-    printf("state: %d\n\n", addDevice(b));
+    sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -155,7 +176,7 @@ void test() {
     b[5] = '-';
     b[6] = '0';
     b[7] = '\0';
-    printf("state: %d\n\n", addDevice(b));
+    sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -165,7 +186,7 @@ void test() {
     b[5] = '-';
     b[6] = '2';
     b[7] = '\0';
-    printf("state: %d\n\n", addDevice(b));
+    sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -175,7 +196,7 @@ void test() {
     b[5] = '-';
     b[6] = '4';
     b[7] = '\0';
-    printf("state: %d\n\n", addDevice(b));
+    sync_printf("state: %d\n\n", addDevice(b));
 
      b[0] = 'v';
     b[1] = 'e';
@@ -185,9 +206,9 @@ void test() {
     b[5] = '-';
     b[6] = '3';
     b[7] = '\0';
-    printf("state: %d\n\n", addDevice(b));
+    sync_printf("state: %d\n\n", addDevice(b));
 
-    printf("------------------------\n\n\n");
+    sync_printf("------------------------\n\n\n");
 
     // printf("name: %s\n", device_list[findDevice(a)]->name);
     // printf("name: %s\n", device_list[findDevice(b)]->name);

@@ -18,5 +18,4 @@ struct subnet{
     uint32_t mask;
     u_char *Mac;
     u_char *nextHopMac;
-    struct subnet *nxt;
 };

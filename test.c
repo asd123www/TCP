@@ -22,7 +22,6 @@ void printOutRouterTable(int n) {
  */
 void* packetSenderThreadRouterFunction() {
     memset(edge, 0x3f, sizeof(edge));
-    edge[0][0] = 0;
 
     //sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id);
     char buf[100];
@@ -84,7 +83,6 @@ void* packetReceiverThreadRouterFunction(void *p) {
 }
 
 
-
 int main(int argc, char *argv[]) {
     test();
     setIPPacketReceiveCallback(ipCallbackExample);
@@ -100,17 +98,6 @@ int main(int argc, char *argv[]) {
         pthread_create(packet_receiver + i, NULL, packetReceiverThreadRouterFunction, (void *)(i));
     }
     pthread_create(&packet_sender, NULL, packetSenderThreadRouterFunction, NULL);
-
-    // while(1) {
-    //     usleep(1e7); // 10s.
-    //     for(int i = 0; i < subnet_num; ++i) {
-    //         sync_printf("%d\n", subnet_list[i] -> addr);
-    //         for(int j = 0; j < 6; ++j) {
-    //             sync_printf("%02x.", subnet_list[i] -> nextHopMac[j]);
-    //         }
-    //         sync_printf("\n\n");
-    //     }
-    // }
 
     pthread_exit(NULL);
     return 0;

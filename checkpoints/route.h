@@ -14,9 +14,9 @@ int dist[MAX_ROUTER_NUM][MAX_ROUTER_NUM];
 
 /*
  * floyd algorithm find shortest path.
- *
  */
 void Dijkstra(int n);
+void setEdgeEntry(int value, int i, int j);
 
 void setEdgeEntry(int value, int i, int j) {
     pthread_mutex_lock(&edgeEntryLock);
@@ -27,17 +27,18 @@ void setEdgeEntry(int value, int i, int j) {
     else {
         edge[i][j] = value;
         edge[j][i] = value;
-        edge[i][i] = edge[j][j] = edge[0][0] =0;
     }
     pthread_mutex_unlock(&edgeEntryLock);
 }
 
 void Dijkstra(int n) {
-    if(edge[0][0] != 0) return;  // no update.
+    // if(edge[0][0] != 0) return;  // no update.
     memset(dist, 0x3f, sizeof(dist));
-    for(int i = 0; i < n; ++i)
+    for(int i = 0; i < n; ++i) {
         for(int j = 0; j < n; ++j) 
             dist[i][j] = edge[i][j];
+        dist[i][i] = 0;
+    }
     for(int k = 0; k < n; ++k) 
         for(int i = 0; i < n; ++i) 
             for(int j = 0; j < n; ++j) 

@@ -87,8 +87,8 @@ int queryMacAddress(const struct in_addr dest, const void *buffer, int broadcast
         ((u_char *)buffer)[5] = 0xff;
         return 0;
     }
-    puts("wrong in queryMacAddress!!!!");
-    exit(0);
+    // puts("wrong in queryMacAddress!!!!");
+    // exit(0);
 
     struct subnet* idx = longestPrefixMatch(dest.s_addr);
     if (idx != NULL) {
@@ -114,7 +114,7 @@ int sendIPPacket(const struct in_addr src, const struct in_addr dest, int proto,
 
     buffer[0] = 0x45; // ip version 4 AND without options is 5 32-bit words.
     buffer[1] = 0x00; // don't need! PRECEDENCE = 0x000 (routine), Delay = 0, Throughput = 0, Reliability = 0.
-    buffer[2] = (len + 20) >> 8;
+    buffer[2] = (len + 20) >> 8;    
     buffer[3] = (len + 20) & 255; // the length of the packet is 20 + len.
     ++identification;
     buffer[4] = identification >> 8;
@@ -129,8 +129,8 @@ int sendIPPacket(const struct in_addr src, const struct in_addr dest, int proto,
     buffer[10] = 0;
     buffer[11] = 0; // checksum, 最后填.
 
-    for(int i=0;i<4;++i) buffer[12+i] = (src.s_addr >> ((3-i)*8)) & 255;
-    for(int i=0;i<4;++i) buffer[16+i] = (dest.s_addr >> ((3-i)*8)) & 255;
+    for(int i=0;i<4;++i) buffer[12+i] = (src.s_addr >> (i*8)) & 255;
+    for(int i=0;i<4;++i) buffer[16+i] = (dest.s_addr >> (i*8)) & 255;
 
     short int *pos = (short int *)buffer;
     int sum = 0;
@@ -186,7 +186,7 @@ int ipCallbackExample(const void* buf, int len, int device) {
     if (uchar2int64Mac(content)  != device_list[device] -> mac) {
         u_char *ip_header =(u_char *)buf + 14; 
         if (*(ip_header + 8) > 1) { // don't broadcast the packet whose TTL is 1.
-            sync_printf("resend broadcast!\n");
+            // sync_printf("resend broadcast!\n");
             *(ip_header + 8) = *(ip_header + 8) - 1; // TTL - 1
             *(ip_header + 10) = *(ip_header + 10) + 1; // chechsum + 1
             for(int turn_device = 0; turn_device < device_num; ++ turn_device) if (turn_device != device)
@@ -200,24 +200,22 @@ int ipCallbackExample(const void* buf, int len, int device) {
     // rep(i,0,39) sync_printf("%02x ",((u_char *)buf)[i]);
     // sync_printf("\n");
 
-
     struct in_addr ip_addr;
     struct in_addr mask; mask.s_addr = ~0;
     ip_addr.s_addr = (((u_char *)buf)[26] << 24) | (((u_char *)buf)[27] << 16) | (((u_char *)buf)[28] << 8) | ((u_char *)buf)[29];
-
 
     setRoutingTable(ip_addr, mask, content, buf + 6, buf);
 
     int idx = findMacAddress(buf + 6);
     if(idx != -1) { // have that point, and explore the content of the message.
-        sync_printf("set edge\n");
+        // sync_printf("set edge\n");
         setEdgeEntry(1, 0, idx + 1); // get directly connected MAC address, update the router edge.
         idx = findMacAddress(content);
-        if(idx == -1) {
-            sync_printf("wrong!\n");
-            exit(0);
-            return 0;
-        }
+        // if(idx == -1) {
+        //     sync_printf("wrong!\n");
+        //     exit(0);
+        //     return 0;
+        // }
 
         content += 6; // other MAC addresses directly connected to idx.
         for(int i = 50, j; i < len; i += 6) {
@@ -244,11 +242,11 @@ int setRoutingTable(const struct in_addr dest, const struct in_addr mask, const 
     else { // 如果这里面return就会发生deadlock, 没有释放锁.
         struct subnet *ptr = (struct subnet *)malloc(sizeof(struct subnet));
 
-        if(ptr == NULL) return -1;//
+        if(ptr == NULL) return -1;
         ptr -> addr = dest.s_addr;
         ptr -> mask = mask.s_addr;
         ptr -> Mac = (u_char *)malloc(10);
-        ptr -> nextHopMac = (u_char *)malloc(10);//
+        ptr -> nextHopMac = (u_char *)malloc(10);
         if(ptr -> Mac == NULL || ptr -> nextHopMac == NULL) return -1;
         memcpy(ptr -> Mac, (u_char *)MAC, 8);
         memcpy(ptr -> nextHopMac, (u_char *)nextHopMAC, 8);

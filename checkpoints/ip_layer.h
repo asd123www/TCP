@@ -3,7 +3,7 @@
  */
 #include <netinet/ether.h>
 
-#define MAX_ROUTER_NUM 10
+#define MAX_ROUTER_NUM 100
 
 #define subnet_prefix(len) (((1 << len) - 1) << (32 - len))
 

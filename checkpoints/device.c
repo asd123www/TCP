@@ -7,9 +7,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <pcap/pcap.h>
+#include <pthread.h>
 
 #include "device.h"
 
+pthread_mutex_t printfMutex;
 
 uint64_t uchar2int64Mac(u_char *buf) {
     uint64_t ans = 0;

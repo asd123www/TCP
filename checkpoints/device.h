@@ -11,11 +11,13 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <pcap/pcap.h>
+#include <pthread.h>
 
 #define MAX_DEVICE_NUMBER 100
 char errbuf[PCAP_ERRBUF_SIZE];
-pthread_mutex_t printfMutex = PTHREAD_MUTEX_INITIALIZER;
 
+
+extern pthread_mutex_t printfMutex;
 
 struct net_device {
     char *name;
@@ -31,7 +33,7 @@ uint64_t uchar2int64Mac(u_char *buf);
 
 int sync_printf(const char *format, ...);
 
-void test();
+void test(); // add the devices needed.
 
 /**
  * Add a device to the library for sending/receiving packets.
@@ -48,4 +50,4 @@ int addDevice(const char *device);
  */
 int findDevice(const char *device);
 
-#endif //DEVICE_H
+#endif // DEVICE_H

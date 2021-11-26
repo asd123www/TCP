@@ -1,3 +1,5 @@
+#ifndef IP_LAYER_H
+#define IP_LAYER_H
 /*
  * Some hyper parameters used in network layer, eg IP. 
  */
@@ -19,3 +21,5 @@ struct subnet {
     u_char *Mac;
     u_char *nextHopMac;
 };
+
+#endif // IP_LAYER_H

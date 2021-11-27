@@ -1,6 +1,18 @@
 {
     "C_Cpp.errorSquiggles": "Enabled",
     "files.associations": {
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "packetio.h": "c",
+        "ip.h": "c",
+        "stdlib.h": "c",
+        "route.h": "c",
+        "ip_layer.h": "c",
+        "stdio.h": "c",
+        "tcp.h": "c",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp",
+        "random": "c"
     }
 }

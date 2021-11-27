@@ -17,6 +17,7 @@ int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id
     char errbuf[PCAP_ERRBUF_SIZE];
 
     pcap_t *handle;
+    printf("sender: %s\n", device_list[id] -> name);
     open_pcap_dev(&handle, device_list[id] -> name, errbuf);
 
     u_char *buffer = (u_char *)malloc(len + 14);

@@ -8,6 +8,12 @@
 #include <sys/socket.h> 
 #include <netdb.h>
 
+#include "tcp.h"
+
+
+#define mySocketNumberOffset 123436
+
+
 /**
  * @see [POSIX.1-2017:socket](http://pubs.opengroup.org/onlinepubs/9699919799/functions/socket.html)
  */
@@ -21,7 +27,7 @@ int __wrap_bind(int socket, const struct sockaddr *address, socklen_t address_le
 
 
 /**
- * @see [POSIX.1-2017:listen](http://pubs.opengroup.org/onlinepubs/ * 9699919799/functions/listen.html)
+ * @see [POSIX.1-2017:listen](http://pubs.opengroup.org/onlinepubs/9699919799/functions/listen.html)
  */
 int __wrap_listen(int socket, int backlog);
 

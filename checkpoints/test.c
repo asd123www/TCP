@@ -2,7 +2,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "ip.h"
+#include "tcp.h"
 
 void printOutRouterTable(int n) {
     // printf("On device ");
@@ -82,6 +82,26 @@ void* packetReceiverThreadRouterFunction(void *p) {
 }
 
 
+
+void testSendTcpPakcet() {
+    struct tcpHeader h;
+    char buf[10];
+    for(int i = 0; i < 9; ++i) buf[i] = 1;
+
+    h.dst.s_addr = 0x11424242;
+    h.src.s_addr = 0x11424242;
+    h.dstport = 80;
+    h.srcport = 80;
+
+    while (1) {
+        printf("hello\n");
+        tcpWrapperSender(&h, 1234, 4321, 0, 1000, 6666, buf, 10);
+        // sleep(5);
+    }
+}
+
+
+
 int main(int argc, char *argv[]) {
     pthread_mutex_init(&printfMutex, NULL);
     pthread_mutex_init(&setRoutingTableLock, NULL);
@@ -90,6 +110,13 @@ int main(int argc, char *argv[]) {
 
     test();
     setIPPacketReceiveCallback(ipCallbackExample);
+
+    printf("%s\n",device_list[0] -> name);
+
+    testSendTcpPakcet();
+    // packetSenderThreadRouterFunction();
+
+    /*
 
 
     pthread_t packet_sender;
@@ -104,6 +131,7 @@ int main(int argc, char *argv[]) {
 
     pthread_exit(NULL);
     return 0;
+    */
 }
 /*
 gcc test.c -o a -lpcap -lpthread

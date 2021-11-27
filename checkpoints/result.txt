@@ -1,0 +1,64 @@
+05:54:23.392453 IP _gateway.53102 > ubuntu.ssh: Flags [P.], seq 375324555:375324727, ack 2009283187, win 2048, options [nop,nop,TS val 3439713329 ecr 2514830782], length 172
+05:54:23.392490 IP ubuntu.ssh > _gateway.53102: Flags [.], ack 172, win 4596, options [nop,nop,TS val 2514830820 ecr 3439713329], length 0
+05:54:23.393404 IP ubuntu.ssh > _gateway.53102: Flags [P.], seq 1:61, ack 172, win 4596, options [nop,nop,TS val 2514830821 ecr 3439713329], length 60
+05:54:23.393725 IP _gateway.53102 > ubuntu.ssh: Flags [.], ack 61, win 2047, options [nop,nop,TS val 3439713331 ecr 2514830821], length 0
+05:54:23.402191 IP _gateway.53102 > ubuntu.ssh: Flags [P.], seq 172:240, ack 61, win 2048, options [nop,nop,TS val 3439713339 ecr 2514830821], length 68
+05:54:23.402225 IP ubuntu.ssh > _gateway.53102: Flags [.], ack 240, win 4596, options [nop,nop,TS val 2514830830 ecr 3439713339], length 0
+05:54:23.402251 IP _gateway.53102 > ubuntu.ssh: Flags [P.], seq 240:356, ack 61, win 2048, options [nop,nop,TS val 3439713339 ecr 2514830821], length 116
+05:54:23.402257 IP ubuntu.ssh > _gateway.53102: Flags [.], ack 356, win 4596, options [nop,nop,TS val 2514830830 ecr 3439713339], length 0
+05:54:23.403177 IP ubuntu.ssh > _gateway.53102: Flags [P.], seq 61:121, ack 356, win 4596, options [nop,nop,TS val 2514830831 ecr 3439713339], length 60
+05:54:23.403433 IP _gateway.53102 > ubuntu.ssh: Flags [.], ack 121, win 2047, options [nop,nop,TS val 3439713340 ecr 2514830831], length 0
+05:54:23.778039 IP6 ubuntu.mdns > ff02::fb.mdns: 0 [2q] PTR (QM)? _ipps._tcp.local. PTR (QM)? _ipp._tcp.local. (45)
+05:54:23.778361 IP ubuntu.mdns > 224.0.0.251.mdns: 0 [2q] PTR (QM)? _ipps._tcp.local. PTR (QM)? _ipp._tcp.local. (45)
+05:54:24.359832 IP ubuntu.39158 > _gateway.domain: 31187+ [1au] PTR? 2.140.16.172.in-addr.arpa. (54)
+05:54:25.051385 IP _gateway.domain > ubuntu.39158: 31187 NXDomain 0/1/1 (132)
+05:54:25.051475 IP ubuntu.39158 > _gateway.domain: 31187+ PTR? 2.140.16.172.in-addr.arpa. (43)
+05:54:25.052347 IP _gateway.domain > ubuntu.39158: 31187 NXDomain 0/1/0 (121)
+05:54:25.052908 IP ubuntu.57273 > _gateway.domain: 63848+ [1au] PTR? 1.140.16.172.in-addr.arpa. (54)
+05:54:25.284310 IP _gateway.domain > ubuntu.57273: 63848 NXDomain 0/1/1 (132)
+05:54:25.284466 IP ubuntu.57273 > _gateway.domain: 63848+ PTR? 1.140.16.172.in-addr.arpa. (43)
+05:54:25.285475 IP _gateway.domain > ubuntu.57273: 63848 NXDomain 0/1/0 (121)
+05:54:25.285924 IP ubuntu.53290 > _gateway.domain: 19653+ [1au] PTR? b.f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.f.f.ip6.arpa. (101)
+05:54:25.407835 IP ubuntu.ssh > _gateway.53102: Flags [P.], seq 121:173, ack 356, win 4596, options [nop,nop,TS val 2514832836 ecr 3439713340], length 52
+05:54:25.408110 IP _gateway.53102 > ubuntu.ssh: Flags [.], ack 173, win 2047, options [nop,nop,TS val 3439715339 ecr 2514832836], length 0
+05:54:25.542957 IP _gateway.domain > ubuntu.53290: 19653 NXDomain 0/1/1 (165)
+05:54:25.543059 IP ubuntu.53290 > _gateway.domain: 19653+ PTR? b.f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.f.f.ip6.arpa. (90)
+05:54:25.543491 IP _gateway.domain > ubuntu.53290: 19653 NXDomain 0/1/0 (154)
+05:54:25.544126 IP ubuntu.45173 > _gateway.domain: 55983+ [1au] PTR? 1.f.d.1.0.f.f.9.3.7.a.d.9.1.0.3.8.0.0.1.b.2.a.5.5.a.b.4.5.1.d.f.ip6.arpa. (101)
+05:54:25.544493 IP _gateway.domain > ubuntu.45173: 55983 NXDomain* 0/1/1 (148)
+05:54:25.544558 IP ubuntu.45173 > _gateway.domain: 55983+ PTR? 1.f.d.1.0.f.f.9.3.7.a.d.9.1.0.3.8.0.0.1.b.2.a.5.5.a.b.4.5.1.d.f.ip6.arpa. (90)
+05:54:25.545751 IP _gateway.domain > ubuntu.45173: 55983 NXDomain* 0/1/0 (137)
+05:54:25.546092 IP ubuntu.38209 > _gateway.domain: 18802+ [1au] PTR? 251.0.0.224.in-addr.arpa. (53)
+05:54:25.587058 IP ubuntu.ssh > _gateway.53102: Flags [P.], seq 173:225, ack 356, win 4596, options [nop,nop,TS val 2514833015 ecr 3439715339], length 52
+05:54:25.587364 IP _gateway.53102 > ubuntu.ssh: Flags [.], ack 225, win 2047, options [nop,nop,TS val 3439715517 ecr 2514833015], length 0
+05:54:26.123431 IP _gateway.53102 > ubuntu.ssh: Flags [P.], seq 356:408, ack 225, win 2048, options [nop,nop,TS val 3439716051 ecr 2514833015], length 52
+05:54:26.167060 IP ubuntu.ssh > _gateway.53102: Flags [.], ack 408, win 4596, options [nop,nop,TS val 2514833595 ecr 3439716051], length 0
+05:54:26.700906 IP _gateway.domain > ubuntu.38209: 18802 NXDomain 0/1/1 (110)
+05:54:26.701006 IP ubuntu.38209 > _gateway.domain: 18802+ PTR? 251.0.0.224.in-addr.arpa. (42)
+05:54:26.702182 IP _gateway.domain > ubuntu.38209: 18802 NXDomain 0/1/0 (99)
+05:54:26.753843 IP ubuntu.ssh > _gateway.53102: Flags [P.], seq 225:277, ack 408, win 4596, options [nop,nop,TS val 2514834182 ecr 3439716051], length 52
+05:54:26.753990 IP _gateway.53102 > ubuntu.ssh: Flags [.], ack 277, win 2047, options [nop,nop,TS val 3439716679 ecr 2514834182], length 0
+05:54:26.756016 IP _gateway.53102 > ubuntu.ssh: Flags [P.], seq 408:468, ack 277, win 2048, options [nop,nop,TS val 3439716682 ecr 2514834182], length 60
+05:54:26.756037 IP ubuntu.ssh > _gateway.53102: Flags [.], ack 468, win 4596, options [nop,nop,TS val 2514834184 ecr 3439716682], length 0
+05:54:26.756059 IP _gateway.53102 > ubuntu.ssh: Flags [P.], seq 468:536, ack 277, win 2048, options [nop,nop,TS val 3439716682 ecr 2514834182], length 68
+05:54:26.756064 IP ubuntu.ssh > _gateway.53102: Flags [.], ack 536, win 4596, options [nop,nop,TS val 2514834184 ecr 3439716682], length 0
+05:54:26.757131 IP ubuntu.ssh > _gateway.53102: Flags [P.], seq 277:405, ack 536, win 4596, options [nop,nop,TS val 2514834185 ecr 3439716682], length 128
+05:54:26.757321 IP _gateway.53102 > ubuntu.ssh: Flags [.], ack 405, win 2046, options [nop,nop,TS val 3439716684 ecr 2514834185], length 0
+05:54:26.758715 IP _gateway.53102 > ubuntu.ssh: Flags [P.], seq 536:612, ack 405, win 2048, options [nop,nop,TS val 3439716685 ecr 2514834185], length 76
+05:54:26.758732 IP ubuntu.ssh > _gateway.53102: Flags [.], ack 612, win 4596, options [nop,nop,TS val 2514834186 ecr 3439716685], length 0
+05:54:26.759603 IP ubuntu.ssh > _gateway.53102: Flags [P.], seq 405:1209, ack 612, win 4596, options [nop,nop,TS val 2514834187 ecr 3439716685], length 804
+05:54:26.759743 IP _gateway.53102 > ubuntu.ssh: Flags [.], ack 1209, win 2035, options [nop,nop,TS val 3439716686 ecr 2514834187], length 0
+05:54:26.791034 IP _gateway.53102 > ubuntu.ssh: Flags [P.], seq 612:672, ack 1209, win 2048, options [nop,nop,TS val 3439716717 ecr 2514834187], length 60
+05:54:26.791063 IP ubuntu.ssh > _gateway.53102: Flags [.], ack 672, win 4596, options [nop,nop,TS val 2514834219 ecr 3439716717], length 0
+05:54:26.794740 IP _gateway.53102 > ubuntu.ssh: Flags [P.], seq 672:1628, ack 1209, win 2048, options [nop,nop,TS val 3439716721 ecr 2514834219], length 956
+05:54:26.794752 IP ubuntu.ssh > _gateway.53102: Flags [.], ack 1628, win 4619, options [nop,nop,TS val 2514834222 ecr 3439716721], length 0
+05:54:26.795658 IP ubuntu.ssh > _gateway.53102: Flags [P.], seq 1209:1269, ack 1628, win 4619, options [nop,nop,TS val 2514834223 ecr 3439716721], length 60
+05:54:26.795912 IP _gateway.53102 > ubuntu.ssh: Flags [.], ack 1269, win 2047, options [nop,nop,TS val 3439716722 ecr 2514834223], length 0
+05:54:28.796943 IP ubuntu.ssh > _gateway.53102: Flags [P.], seq 1269:1313, ack 1628, win 4619, options [nop,nop,TS val 2514836225 ecr 3439716722], length 44
+05:54:28.797166 IP _gateway.53102 > ubuntu.ssh: Flags [.], ack 1313, win 2047, options [nop,nop,TS val 3439718718 ecr 2514836225], length 0
+05:54:29.032139 IP _gateway.53102 > ubuntu.ssh: Flags [P.], seq 1628:1680, ack 1313, win 2048, options [nop,nop,TS val 3439718952 ecr 2514836225], length 52
+05:54:29.032185 IP ubuntu.ssh > _gateway.53102: Flags [.], ack 1680, win 4619, options [nop,nop,TS val 2514836460 ecr 3439718952], length 0
+05:54:29.301299 IP ubuntu.36430 > _gateway.domain: 31298+ [1au] AAAA? asimov.vortex.data.trafficmanager.net. (66)
+05:54:29.301990 IP _gateway.domain > ubuntu.36430: 31298 0/1/1 (127)
+05:54:29.302157 IP ubuntu.53486 > 40.77.226.250.https: Flags [S], seq 1719478883, win 64240, options [mss 1460,sackOK,TS val 2419222075 ecr 0,nop,wscale 7], length 0
+

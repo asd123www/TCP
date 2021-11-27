@@ -7,8 +7,14 @@ obj = $(patsubst %.c, %.o, $(src))
 
 target = tcp
 
-tcp: test.o device.o packetio.o route.o ip.o
-	gcc test.o ip.o packetio.o route.o device.o -o tcp -lpcap -lpthread
+tcp: test.o tcp.o device.o packetio.o route.o ip.o ringbuffer.o
+	gcc test.o tcp.o ringbuffer.o ip.o packetio.o route.o device.o -o tcp -lpcap -lpthread
+
+tcp.o: tcp.c
+	gcc -c tcp.c -o tcp.o
+
+ringbuffer.o: ringbuffer.c
+	gcc -c ringbuffer.c -o ringbuffer.o
 
 test.o: test.c
 	gcc -c test.c -o test.o
@@ -28,3 +34,6 @@ ip.o: ip.c
 .PHONY: clean
 clean:
 	rm -rf $(obj) $(target)
+
+run:
+	sudo ./tcp

@@ -1,5 +1,5 @@
 {
-    "C_Cpp.errorSquiggles": "Enabled",
+    "C_Cpp.errorSquiggles": "Disabled",
     "files.associations": {
         "unistd.h": "c",
         "packetio.h": "c",
@@ -13,6 +13,7 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "utility": "cpp",
-        "random": "c"
+        "random": "c",
+        "string": "c"
     }
 }

@@ -37,3 +37,6 @@ clean:
 
 run:
 	sudo ./tcp
+
+codeinfo:
+	git ls-files | xargs wc -l

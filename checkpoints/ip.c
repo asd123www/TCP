@@ -119,8 +119,25 @@ int findMacAddress(const void *buf) {
     return -1;
 }
 
-
 int ipCallbackExample(const void* buf, int len, int device) {
+    if (len <= 0) return 0;
+    if ((*((u_char *)buf) >> 4) != 0x4) return 0; // check if it's IPv4 packet.
+    if (*((u_char *)buf + 9) != 0x06) return 0; // not TCP protocol.
+    
+    struct in_addr src;
+    struct in_addr dst;
+    src.s_addr = *((uint32_t *)buf + 3);
+    dst.s_addr = *((uint32_t *)buf + 4);
+
+
+    int size = *((u_char *)buf + 2) << 8 | *((u_char *)buf + 3);
+    assert(size == len);
+    size -= (*((u_char *)buf) & 15) * 4; // minus the header length.
+
+    return TCPPakcetCallback(buf + len - size, size, src, dst);
+}
+
+int old_ipCallbackExample(const void* buf, int len, int device) {
     #define rep(i,l,r) for(int i=l;i<=r;++i)
     if (len < 44) return 0;
 

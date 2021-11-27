@@ -29,6 +29,9 @@ struct ringBuffer {
  * malloc a ring buffer.
  */
 struct ringBuffer *initRingBuffer();
+void freeRingBuffer(struct ringBuffer *p);
+
+void updateRingBufferHead(struct ringBuffer *b, int len);
 
 
 /* @param b: the buffer we are operating on.
@@ -39,18 +42,19 @@ struct ringBuffer *initRingBuffer();
  * otherwise, retur -1.
  */
 int ringBufferReceiveSegment(struct ringBuffer *b, u_char *buf, int len);
-int __wrap_ringBufferReceiveSegment(struct ringBuffer *b, u_char *buf, int len);
+// int __wrap_ringBufferReceiveSegment(struct ringBuffer *b, u_char *buf, int len);
 
 
 /* 
  * @param b: the buffer we are operating on.
- * @param len: is want len bytes.
+ * @param len: want len bytes.
+ * @param offset: begin with buffer + offset.
  * 
  * if succeed, return the buffer with len bytes.
  * otherwise, return NULL.
  */
-u_char *ringBufferSendSegment(struct ringBuffer *b, int len);
-u_char *__warpper_ringBufferSendSegment(struct ringBuffer *b, int len);
+u_char *ringBufferSendSegment(struct ringBuffer *b, int len, int offset);
+// u_char *__warpper_ringBufferSendSegment(struct ringBuffer *b, int len, int offset = 0);
 
 
 #endif // RINGBUFFER_H

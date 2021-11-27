@@ -1,6 +1,7 @@
 #ifndef TCP_H
 #define TCP_H
 
+#include <time.h> //CLOCKS_PER_SEC
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -14,12 +15,27 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned long uint64_t;
 
-#define MaxTCPNumber 10
+#define MaxTCPNumber 100
+#define MaxTCPStates 15
+#define MaxTCPActions (1<<7)
 #define MaxTCPSegment 500
+
+#define INITIAL_WINDOW_SIZE 2000
+
+#define TCP_URG 32
+#define TCP_ACK 16
+#define TCP_PSH 8
+#define TCP_RST 4
+#define TCP_SYN 2
+#define TCP_FIN 1
+
+#define ACTION_RECV 0
+#define ACTION_SEND 1
 
 // TCP states
 enum TCPstate{
-    TCP_SYN_SENT = 0, // sent a connection request, waiting for ack
+    LISTEN = 0, 
+    TCP_SYN_SENT, // sent a connection request, waiting for ack
     TCP_SYN_RECV,     // received a connection request, sent ack, waiting for final ack in three-way handshake.
     TCP_ESTABLISHED,  // connection established
     TCP_FIN_WAIT1,    // our side has shutdown, waiting to complete transmission of remaining buffered data
@@ -33,6 +49,7 @@ enum TCPstate{
     TCP_CLOSE		  // socket is finished
 };
 
+
 /*
         1           2         3          4 
     ----------|----------|----------|---------- 
@@ -45,13 +62,13 @@ enum TCPstate{
             Send Sequence Space
 */
 struct SendSequenceVariable {
-    int UNA; // send unacknowledged
-    int NXT; // send next
-    int WND; // send window
-    int UP;  // send urgent pointer
-    int WL1; // segment sequence number used for last window update
-    int WL2; // segment acknowledgment number used for last window update
-    int ISS; // initial send sequence number
+    uint32_t UNA; // send unacknowledged
+    uint32_t NXT; // send next
+    uint32_t WND; // send window
+    uint32_t UP;  // send urgent pointer
+    uint32_t WL1; // segment sequence number used for last window update
+    uint32_t WL2; // segment acknowledgment number used for last window update
+    uint32_t ISS; // initial send sequence number
 };
 
 
@@ -66,10 +83,10 @@ struct SendSequenceVariable {
         Receive Sequence Space
 */
 struct ReceiveSequenceVariable {
-    int NXT; // receive next
-    int WND; // receive window
-    int UP;  // receive urgent pointer
-    int IRS; // initial receive sequence number
+    uint32_t NXT; // receive next
+    uint32_t WND; // receive window
+    uint32_t UP;  // receive urgent pointer
+    uint32_t IRS; // initial receive sequence number
 };
 
 struct tcpHeader {
@@ -85,8 +102,14 @@ struct TransmissionControlBlock {
     struct ReceiveSequenceVariable RCV;
 };
 
+
+// quintuple(五元组) identify the communication channel.
+
 struct tcpInfo {
     pthread_mutex_t lock; // syn for send/receive.
+
+    uint64_t lastClock;
+    uint64_t RTT;
 
     struct tcpHeader *h;
 
@@ -103,11 +126,32 @@ struct tcpInfo *tcps[MaxTCPNumber];
 
 
 
-
 int convertInt16PC2Net(uint32_t x);
 int convertInt32PC2Net(uint32_t x);
 
-int findLowestSocketNumber();
+/* @brief: initialize a tcp connect.
+ * 
+ */
+struct tcpInfo *initiateTCPConnect();
+
+/* @brief: free the tcp connect.
+ * 
+ */
+void freeTCPConnect(struct tcpInfo *tcp);
+
+
+// /* @brief: initialize the transfer matrix.
+//  * 
+//  */
+// void initialMatStateAction();
+
+// /* @brief: change the TCP state after specific action.
+//  * 
+//  * return 0 if succeed.
+//  * otherwise -1.
+//  */
+// int TCPStateTransferWithAction(struct TransmissionControlBlock *tcb, int direction, int param, int isTimeOut);
+
 
 int checkSocketNumberValid(int socketNumber);
 
@@ -116,10 +160,40 @@ uint16_t TCPchecksum(const void *buf, int len);
 
 /* the wrapper function, just send, no reliability concern.
  * return 0 if succeeded, else wrong.
+ * Current Segment Variables
+    SEG.SEQ - segment sequence number
+    SEG.ACK - segment acknowledgment number
+    SEG.LEN - segment length
+    SEG.WND - segment window
+    SEG.UP  - segment urgent pointer
+    SEG.PRC - segment precedence value
  */
 int __wrap_TCP2IPSender(struct tcpHeader *h, uint32_t seqNumber, uint32_t ackNumber, uint16_t permBits, uint16_t windowSize, uint16_t urgenPointer, const void *buf, int len);
 
 
+/* @brief: send a segment in TCP's ring buffer. Based on tcb.
+ *
+ * @param tcp: the tcp connection.
+ * @param permBits: the 6 state bits.
+ */
+int TcpSlidingWindowSender(struct tcpInfo *tcp, int permBits);
+
+/* @brief: the thread for TCP sender. Never return until closed.
+ *
+ */
+void tcpSender(struct tcpInfo *tcp);
+
+
+/* @brief: push len bytes data to tcp connnect fd's buffer.
+ * 
+ * @param fd: the tcp connect.
+ * @param buf: source buffer.
+ * @param len: length of data.
+ * 
+ * return 0 if succeed.
+ * else return -1;
+ */
+int pushTCPData(struct tcpInfo *fd, u_char *buf, int len);
 
 /* @brief: read len bytes data from tcp connnect fd to buffer.
  * 
@@ -131,5 +205,18 @@ int __wrap_TCP2IPSender(struct tcpHeader *h, uint32_t seqNumber, uint32_t ackNum
  * else return -1;
  */ 
 int fetchTCPData(struct tcpInfo *fd, u_char *buf, int len);
+
+
+
+
+/*
+ * @brief Register a callback function to be called each time an IP packet was received.
+ * 
+ * @param callback The callback function.
+ * @return 0 on success, -1 on error.
+ * @see IPPacketReceiveCallback
+ */
+int setTCPPacketReceiveCallback(TCPPacketReceiveCallback callback);
+int TCPCallback(const void* buf, int len);
 
 #endif // SOCKET_H

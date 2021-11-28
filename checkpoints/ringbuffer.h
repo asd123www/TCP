@@ -41,7 +41,7 @@ void updateRingBufferHead(struct ringBuffer *b, int len);
  * if succeed, return 0.
  * otherwise, retur -1.
  */
-int ringBufferReceiveSegment(struct ringBuffer *b, u_char *buf, int len);
+int ringBufferReceiveSegment(struct ringBuffer *b, const u_char *buf, int len);
 // int __wrap_ringBufferReceiveSegment(struct ringBuffer *b, u_char *buf, int len);
 
 

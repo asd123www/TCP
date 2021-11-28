@@ -16,9 +16,9 @@ typedef unsigned int uint32_t;
 typedef unsigned long uint64_t;
 
 #define MaxTCPNumber 100
-#define MaxTCPStates 15
-#define MaxTCPActions (1<<7)
 #define MaxTCPSegment 500
+
+#define mySocketNumberOffset 123436
 
 #define INITIAL_WINDOW_SIZE 2000
 
@@ -90,8 +90,8 @@ struct ReceiveSequenceVariable {
 };
 
 struct tcpHeader {
-    int srcport;
-    int dstport;
+    uint16_t srcport;
+    uint16_t dstport;
     struct in_addr src;
     struct in_addr dst;
 };
@@ -108,6 +108,9 @@ struct TransmissionControlBlock {
 struct tcpInfo {
     pthread_mutex_t lock; // syn for send/receive.
 
+
+    int wantClose;
+
     uint64_t lastClock;
     uint64_t RTT;
 
@@ -123,6 +126,29 @@ struct tcpInfo *tcps[MaxTCPNumber];
 
 
 
+struct socketPair {
+    int type;
+    void *addr;
+};
+
+struct socketPair mapSocket[2 * MaxTCPNumber];
+
+/* @brief: alloc smallest free identifier.
+ *
+ * @param type: tcpInfo or Socket.
+ * @param addr: pointer to the struct.
+ * return 0 if succeed, otherwise -1.
+ */ 
+int allocSocketDescriptor(int type, void *addr);
+
+/* @brief: transfer the socket number to real index.
+ *
+ * @param type: tcpInfo or Socket.
+ * @param addr: pointer to the struct.
+ * return the >= 0 real index if succeed, otherwise -1.
+ */ 
+int maintainSocketDescriptor(int fd);
+
 
 
 
@@ -131,14 +157,20 @@ int convertInt32PC2Net(uint32_t x);
 
 /* @brief: initialize a tcp connect.
  * 
+ * @param state: initial tcp state.
  */
-struct tcpInfo *initiateTCPConnect();
+struct tcpInfo *initiateTCPConnect(struct tcpHeader hd, int state);
 
 /* @brief: free the tcp connect.
  * 
  */
 void freeTCPConnect(struct tcpInfo *tcp);
 
+/* @brief: find the tcp connection based on the 5-tuple.
+ *         the protocol is specific.
+ */
+struct tcpInfo *findTCPQuintuple(struct in_addr src, struct in_addr dst, uint16_t srcport, uint16_t dstport);
+int deleteTCPQuintuple(struct tcpInfo *tcp);
 
 // /* @brief: initialize the transfer matrix.
 //  * 
@@ -180,8 +212,15 @@ int TcpSlidingWindowSender(struct tcpInfo *tcp, int permBits);
 
 /* @brief: the thread for TCP sender. Never return until closed.
  *
+* @param pt: pointer to tcp
  */
-void tcpSender(struct tcpInfo *tcp);
+void* tcpSender(void *pt);
+
+/* @brief: the function for TCP receiver. Return after executing the packet.
+ *
+ */
+void tcpReceiver(struct tcpInfo *tcp, uint32_t seqNumber, uint32_t ackNumber, uint16_t permBits, uint16_t windowSize, uint16_t urgentPointer, const void *receiveBuffer, int len); 
+
 
 
 /* @brief: push len bytes data to tcp connnect fd's buffer.
@@ -193,7 +232,7 @@ void tcpSender(struct tcpInfo *tcp);
  * return 0 if succeed.
  * else return -1;
  */
-int pushTCPData(struct tcpInfo *fd, u_char *buf, int len);
+int pushTCPData(struct tcpInfo *fd, const u_char *buf, int len);
 
 /* @brief: read len bytes data from tcp connnect fd to buffer.
  * 
@@ -217,6 +256,6 @@ int fetchTCPData(struct tcpInfo *fd, u_char *buf, int len);
  * @see IPPacketReceiveCallback
  */
 int setTCPPacketReceiveCallback(TCPPacketReceiveCallback callback);
-int TCPCallback(const void* buf, int len);
+int TCPCallback(const void* buf, int len, struct in_addr src, struct in_addr dst);
 
 #endif // SOCKET_H

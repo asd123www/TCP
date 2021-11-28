@@ -11,7 +11,31 @@
 #include "tcp.h"
 
 
-#define mySocketNumberOffset 123436
+#define SOCKET_INUSE 1
+#define SOCKET_BOUND 2
+
+
+#define maxBacklog 20
+#define maxSocketSize 20
+
+
+struct myOwnSocket {
+    int permBits;
+
+    int domain;
+    int type;
+    int protocol;
+
+    int backlog;
+    
+    uint16_t srcport;
+    uint32_t srcaddr;
+
+    // struct tcpInfo *que[maxBacklog]; // tcp connections.
+    int que[maxBacklog]; // store the tcp connection descriptor.
+};
+
+struct myOwnSocket sock[maxSocketSize];
 
 
 /**

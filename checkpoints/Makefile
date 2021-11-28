@@ -7,11 +7,14 @@ obj = $(patsubst %.c, %.o, $(src))
 
 target = tcp
 
-tcp: test.o tcp.o device.o packetio.o route.o ip.o ringbuffer.o
-	gcc test.o tcp.o ringbuffer.o ip.o packetio.o route.o device.o -o tcp -lpcap -lpthread
+tcp: test.o socket.o tcp.o device.o packetio.o route.o ip.o ringbuffer.o
+	gcc test.o socket.o tcp.o ringbuffer.o ip.o packetio.o route.o device.o -o tcp -lpcap -lpthread
 
 tcp.o: tcp.c
 	gcc -c tcp.c -o tcp.o
+
+socket.o: socket.c
+	gcc -c socket.c -o socket.o
 
 ringbuffer.o: ringbuffer.c
 	gcc -c ringbuffer.c -o ringbuffer.o
@@ -33,7 +36,11 @@ ip.o: ip.c
 
 .PHONY: clean
 clean:
+	clear
 	rm -rf $(obj) $(target)
 
 run:
 	sudo ./tcp
+
+codeinfo:
+	git ls-files | xargs wc -l

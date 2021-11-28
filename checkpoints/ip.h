@@ -7,6 +7,7 @@
  */
 #include <netinet/ip.h>
 #include <string.h>
+#include <assert.h>
 
 #include "ip_layer.h"
 #include "route.h"
@@ -22,6 +23,12 @@ extern pthread_mutex_t setRoutingTableLock;
 struct subnet *subnet_list[MAX_ROUTER_NUM + 5];
 
 int queryMacAddress(const struct in_addr dest, const void *buf, int broadcast);
+
+
+
+
+typedef int (*TCPPacketReceiveCallback)(const void* buf, int len, struct in_addr src, struct in_addr dst);
+TCPPacketReceiveCallback TCPPakcetCallback;
 
 /* 
  * easy implement of longest prefix match algo.

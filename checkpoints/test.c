@@ -95,7 +95,7 @@ void testSendTcpPakcet() {
 
     while (1) {
         printf("hello\n");
-        tcpWrapperSender(&h, 1234, 4321, 0, 1000, 6666, buf, 10);
+        __wrap_TCP2IPSender(&h, 1234, 4321, 0, 1000, 6666, buf, 10);
         // sleep(5);
     }
 }

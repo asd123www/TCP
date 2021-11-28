@@ -105,8 +105,10 @@ int frameCallbackExample(const void *buf, int len, int id) {
     // printf("Src mac address: ");
     // rep(i,6,11) printf("%02x.", *((u_char *)buf+i));
     // puts("");
+    // uchar2int64Mac(content)  != device_list[device] -> mac
+    if (uchar2int64Mac((u_char *)buf) == device_list[id] -> mac)  // the mac address matches.
+        IPPakcetCallback(buf + 14, len - 14, id);
 
-    IPPakcetCallback(buf, len, id);
     return 0;
 }
 

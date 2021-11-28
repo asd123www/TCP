@@ -12,7 +12,14 @@ struct ringBuffer *initRingBuffer() {
     return p;
 }
 
-int __wrap_ringBufferReceiveSegment(struct ringBuffer *b, u_char *buf, int len) {
+void freeRingBuffer(struct ringBuffer *p) {
+    if (p == NULL) return;
+    free(p -> buffer);
+    free(p);
+    return;
+}
+
+int __wrap_ringBufferReceiveSegment(struct ringBuffer *b, const u_char *buf, int len) {
     int size = calcSize(b -> tail - b -> head);
     if (size + len >= maxRingBufferSize) return -1; // buffer overflow.
 
@@ -27,19 +34,21 @@ int __wrap_ringBufferReceiveSegment(struct ringBuffer *b, u_char *buf, int len) 
     return 0;
 }
 
-int ringBufferReceiveSegment(struct ringBuffer *b, u_char *buf, int len) {
+int ringBufferReceiveSegment(struct ringBuffer *b, const u_char *buf, int len) {
     pthread_mutex_lock(&b -> lock);
     int state = __wrap_ringBufferReceiveSegment(b, buf, len);
     pthread_mutex_unlock(&b -> lock);
     return state;
 }
 
-u_char *__wrap_ringBufferSendSegment(struct ringBuffer *b, int len) {
+u_char *__wrap_ringBufferSendSegment(struct ringBuffer *b, int len, int offset) {
     int size = calcSize(b -> tail - b -> head);
-    if (size < len) return NULL; // we don't have that much bytes.
+    if (size < len + offset) return NULL; // we don't have that much bytes.
 
     u_char *buf = (u_char *)malloc(len); // caller must free buf.
     if (buf == NULL) return NULL;
+
+    b -> head = (b -> head + offset) % maxRingBufferSize;
 
     if (b -> tail < b -> head) {
         int tmp = maxRingBufferSize - b -> head;
@@ -50,16 +59,23 @@ u_char *__wrap_ringBufferSendSegment(struct ringBuffer *b, int len) {
         memcpy(buf, b -> buffer + b -> head, len);
     }
 
-    b -> head = (b -> head + len) % maxRingBufferSize;
+    b -> head = (b -> head - offset + maxRingBufferSize) % maxRingBufferSize;
 
+    // b -> head = (b -> head + len) % maxRingBufferSize;
     return buf;
 }
 
-u_char *ringBufferSendSegment(struct ringBuffer *b, int len) {
+u_char *ringBufferSendSegment(struct ringBuffer *b, int len, int offset) {
     pthread_mutex_lock(&b -> lock);
-    u_char *state = __wrap_ringBufferSendSegment(b, len);
+    u_char *state = __wrap_ringBufferSendSegment(b, len, offset);
     pthread_mutex_unlock(&b -> lock);
     return state;
+}
+
+void updateRingBufferHead(struct ringBuffer *b, int len) {
+    pthread_mutex_lock(&b -> lock);
+    b -> head = (b -> head + len) % maxRingBufferSize;
+    pthread_mutex_unlock(&b -> lock);
 }
 
 

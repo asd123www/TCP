@@ -29,7 +29,7 @@ struct subnet* longestPrefixMatch(uint32_t ip) {
 }
 
 int queryMacAddress(const struct in_addr dest, const void *buffer, int broadcast) {
-    if(broadcast) {
+    if(broadcast || !broadcast) { // asd123www, 先广播...
         ((u_char *)buffer)[0] = 0xff;
         ((u_char *)buffer)[1] = 0xff;
         ((u_char *)buffer)[2] = 0xff;
@@ -94,7 +94,7 @@ int sendIPPacket(const struct in_addr src, const struct in_addr dest, int proto,
 
     int state = sendFrame(buffer, len + 20, 0x0800, destmac, device); // ether type = 0x0800: ipv4.
 
-    sync_printf("packet send state: %d\n", state);
+    // sync_printf("packet send state: %d\n", state);
     free(destmac);
     free(buffer);
 

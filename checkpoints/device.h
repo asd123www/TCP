@@ -42,6 +42,8 @@ void test(); // add the devices needed.
  */
 int addDevice(const char *device);
 
+void addDevices();
+
 /**
  * Find a device added by 'addDevice'.
  * @param device Name of the network device.

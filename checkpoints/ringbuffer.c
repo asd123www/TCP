@@ -21,6 +21,7 @@ void freeRingBuffer(struct ringBuffer *p) {
 
 int __wrap_ringBufferReceiveSegment(struct ringBuffer *b, const u_char *buf, int len) {
     int size = calcSize(b -> tail - b -> head);
+
     if (size + len >= maxRingBufferSize) return -1; // buffer overflow.
 
     int tmp = maxRingBufferSize - b -> tail;
@@ -29,7 +30,8 @@ int __wrap_ringBufferReceiveSegment(struct ringBuffer *b, const u_char *buf, int
         memcpy(b -> buffer, buf + tmp, len - tmp);
     }
 
-    b -> tail = (b -> tail + len) %maxRingBufferSize;
+    // printf("size: %d %d\n", (b->tail + len), (b->tail + len) %maxRingBufferSize );
+    b -> tail = (b -> tail + len) % maxRingBufferSize;
 
     return 0;
 }

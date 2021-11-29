@@ -83,7 +83,7 @@ void* packetReceiverThreadRouterFunction(void *p) {
 
 
 
-void testSendTcpPakcet() {
+void* testSendTcpPakcet() {
     struct tcpHeader h;
     char buf[10];
     for(int i = 0; i < 9; ++i) buf[i] = 1;
@@ -108,31 +108,26 @@ int main(int argc, char *argv[]) {
     pthread_mutex_init(&edgeEntryLock, NULL);
 
 
-    test();
+    addDevices();
     setIPPacketReceiveCallback(ipCallbackExample);
 
-    printf("%s\n",device_list[0] -> name);
-
-    testSendTcpPakcet();
+    // printf("%s\n",device_list[0] -> name);
+    // testSendTcpPakcet();
     // packetSenderThreadRouterFunction();
-
-    /*
 
 
     pthread_t packet_sender;
-    pthread_t packet_receiver[5];
+    pthread_t packet_receiver[10];
 
     sync_printf("device number: %d\n", device_num);
     for(int i = 0; i < device_num; ++i) {
         if (device_list[i] == NULL) continue;
         pthread_create(packet_receiver + i, NULL, packetReceiverThreadRouterFunction, (void *)(i));
     }
-    pthread_create(&packet_sender, NULL, packetSenderThreadRouterFunction, NULL);
+    
+    pthread_create(&packet_sender, NULL, testSendTcpPakcet, NULL);
+    // pthread_create(&packet_sender, NULL, packetSenderThreadRouterFunction, NULL);
 
     pthread_exit(NULL);
     return 0;
-    */
 }
-/*
-gcc test.c -o a -lpcap -lpthread
-*/

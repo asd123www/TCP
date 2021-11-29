@@ -4,6 +4,8 @@
 #include "socket.h"
 
 
+// 加个锁...
+
 /* create an unbound socket.
  * return file descriptor for later communication with sockets.
  * *** allocate the lowest numbered available
@@ -13,8 +15,6 @@
  * type matches with protocol.
  */
 int __wrap_socket(int domain, int type, int protocol) {
-    setFrameReceiveCallback();
-
     // the undefined function go to system's API.
     if (domain != AF_INET || type != SOCK_STREAM || (protocol > 0 && protocol != IPPROTO_TCP))
         return socket(domain, type, protocol);

@@ -91,7 +91,7 @@ int sync_printf(const char *format, ...) {
     va_end(args);
 }
 
-void test() {
+void addDevices() {
     char a[20];
     char b[20];
     a[0] = 'e';

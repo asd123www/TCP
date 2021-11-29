@@ -17,7 +17,7 @@ int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id
     char errbuf[PCAP_ERRBUF_SIZE];
 
     pcap_t *handle;
-    printf("sender: %s\n", device_list[id] -> name);
+    // printf("sender: %s\n", device_list[id] -> name);
     open_pcap_dev(&handle, device_list[id] -> name, errbuf);
 
     u_char *buffer = (u_char *)malloc(len + 14);
@@ -27,11 +27,12 @@ int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id
     }
 
 
+    // for (int i = 0; i < 6; ++i) sync_printf("%02x.", buffer[i]);
+    // sync_printf("\n");
+
     for (int i = 0; i < 6; ++i) buffer[i] = *((u_char *)destmac + i);
     for (int i = 6; i < 12; ++i) buffer[i] = (device_list[id] -> mac >> 8*(11-i)) & 255;
     
-    // for (int i = 0; i < 6; ++i) sync_printf("%02x.", buffer[i]);
-    // sync_printf("\n");
     // for (int i = 6; i < 12; ++i) sync_printf("%02x.", buffer[i]);
     // sync_printf("\n");
 
@@ -102,11 +103,16 @@ int frameCallbackExample(const void *buf, int len, int id) {
     // printf("Dst mac address: ");
     // rep(i,0,5) printf("%02x.", *((u_char *)buf+i));
     // puts("");
+
+    // printf("%lx\n", (uint64_t)(-1));
+    // printf("dst:%lx  device:%lx\n\n\n", uchar2int64Mac((u_char *)buf), device_list[id] -> mac);
     // printf("Src mac address: ");
     // rep(i,6,11) printf("%02x.", *((u_char *)buf+i));
     // puts("");
     // uchar2int64Mac(content)  != device_list[device] -> mac
-    if (uchar2int64Mac((u_char *)buf) == device_list[id] -> mac)  // the mac address matches.
+
+    if (uchar2int64Mac((u_char *)buf) == 0xffffffffffffll || 
+        uchar2int64Mac((u_char *)buf) == device_list[id] -> mac)  // the mac address matches.
         IPPakcetCallback(buf + 14, len - 14, id);
 
     return 0;

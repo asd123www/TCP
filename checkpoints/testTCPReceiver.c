@@ -28,16 +28,21 @@ void* testReceiveTcpPakcet() {
     pthread_t tcp_sender;
     pthread_create(&tcp_sender, NULL, tcpSender, tcp);
 
-
+    int size = 0;
     while (1) {
         int state = fetchTCPData(tcp, buf, 5);
         printf("fetch TCP data: %d\n", state);
         if (state != -1) {
-            printf("Successfully received packet!\n");
+            size += 5;
+            printf("Successfully received packet!  %d %d\n", size, calcSize(tcp -> rx ->tail -tcp -> rx ->head ));
             for(int i = 0; i < 5; ++i) printf("%d ", buf[i]);
             puts("");
         }
         else sleep(1);
+
+        if (size > 200) {
+        //     tcp -> wantClose = 1;
+        }
     }
 }
 

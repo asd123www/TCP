@@ -20,7 +20,7 @@ typedef unsigned long uint64_t;
 
 #define mySocketNumberOffset 123436
 
-#define INITIAL_WINDOW_SIZE 2000
+#define INITIAL_WINDOW_SIZE 100
 
 #define TCP_URG 32
 #define TCP_ACK 16

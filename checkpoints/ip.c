@@ -101,7 +101,6 @@ int sendIPPacket(const struct in_addr src, const struct in_addr dest, int proto,
     return state;
 }
 
-
 int findIPAddress(struct in_addr dest, struct in_addr mask) {
     for (int i = 0; i < subnet_num; ++i) {
         if (dest.s_addr == subnet_list[i] -> addr && mask.s_addr == subnet_list[i] -> mask) {

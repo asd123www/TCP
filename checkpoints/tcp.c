@@ -413,7 +413,6 @@ int __wrap_TCP2IPSender(struct tcpHeader *h, uint32_t seqNumber, uint32_t ackNum
     *((uint16_t *)buffer + 1) = convertInt16PC2Net(urgenPointer);
     buffer -= 16;
     memcpy(buffer + 20, buf, len);
-
     // add checksum after others.
     // for (int i = 0; i < 10; ++i) *((uint16_t *)buffer + 8) += *((uint16_t *)buffer + i);
     *((uint16_t *)buffer + 8) = TCPchecksum(buffer, len + 20) ^ (65535);

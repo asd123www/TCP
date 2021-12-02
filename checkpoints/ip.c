@@ -94,7 +94,7 @@ int sendIPPacket(const struct in_addr src, const struct in_addr dest, int proto,
 
     int state = sendFrame(buffer, len + 20, 0x0800, destmac, device); // ether type = 0x0800: ipv4.
 
-    // sync_printf("packet send state: %d\n", state);
+    sync_printf("packet send state: %d\n", state);
     free(destmac);
     free(buffer);
 

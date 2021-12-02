@@ -31,6 +31,10 @@ struct ringBuffer {
 struct ringBuffer *initRingBuffer();
 void freeRingBuffer(struct ringBuffer *p);
 
+
+int ringBufferSize(struct ringBuffer *b);
+
+
 void updateRingBufferHead(struct ringBuffer *b, int len);
 
 

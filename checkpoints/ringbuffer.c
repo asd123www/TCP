@@ -19,6 +19,15 @@ void freeRingBuffer(struct ringBuffer *p) {
     return;
 }
 
+
+
+int ringBufferSize(struct ringBuffer *b) {
+    pthread_mutex_lock(&b -> lock);
+    int size = calcSize(b -> tail - b -> head);
+    pthread_mutex_unlock(&b -> lock);
+    return size;
+}
+
 int __wrap_ringBufferReceiveSegment(struct ringBuffer *b, const u_char *buf, int len) {
     int size = calcSize(b -> tail - b -> head);
     if (size + len >= maxRingBufferSize) return -1; // buffer overflow.

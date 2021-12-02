@@ -16,11 +16,11 @@ typedef unsigned int uint32_t;
 typedef unsigned long uint64_t;
 
 #define MaxTCPNumber 100
-#define MaxTCPSegment 5
+#define MaxTCPSegment 500
 
 #define mySocketNumberOffset 123436
 
-#define INITIAL_WINDOW_SIZE 100
+#define INITIAL_WINDOW_SIZE 10000
 
 #define TCP_URG 32
 #define TCP_ACK 16
@@ -127,7 +127,7 @@ struct tcpInfo *tcps[MaxTCPNumber];
 
 
 struct socketPair {
-    int type;
+    int type; // 0: unused, 1: socket, 2: tcp.
     void *addr;
 };
 

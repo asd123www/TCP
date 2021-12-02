@@ -26,6 +26,8 @@ struct myOwnSocket {
     int type;
     int protocol;
 
+    pthread_mutex_t lock;
+
     int backlog;
     
     uint16_t srcport;

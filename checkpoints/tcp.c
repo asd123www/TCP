@@ -9,7 +9,7 @@
 int allocSocketDescriptor(int type, void *addr) {
     int pos = -1;
     for (int i = 0; i < 2 * MaxTCPNumber; ++i) {
-        if (mapSocket[i].type == -1) {
+        if (mapSocket[i].type == 0) {
             pos = i;
             break;
         }
@@ -29,8 +29,10 @@ int allocSocketDescriptor(int type, void *addr) {
 int maintainSocketDescriptor(int fd) {
     if (fd < mySocketNumberOffset || fd >= mySocketNumberOffset + 2*MaxTCPNumber) return -1;
 
+
     int sockNumber = fd - mySocketNumberOffset;
-    if (mapSocket[sockNumber].type == -1) return -1;
+    // printf("check: %d\n", mapSocket[sockNumber].type);
+    if (mapSocket[sockNumber].type == 0) return -1;
 
     return sockNumber;
 }
@@ -57,10 +59,17 @@ struct tcpInfo *initiateTCPConnect(struct tcpHeader hd, int state) {
     }
     pthread_mutex_init(&tcp -> lock, NULL);
     tcp -> lastClock = 0;
-    tcp -> RTT = CLOCKS_PER_SEC * 0.005; // 1.5s
+    tcp -> RTT = CLOCKS_PER_SEC * 0.007; // 1.5s
 
     tcp -> h = (struct tcpHeader *)malloc(sizeof(struct tcpHeader));
-    *(tcp -> h) = hd;
+    // 直接*(tcp -> h) = hd好像copy不过来第二层...
+    tcp -> h ->srcport = hd.srcport;
+    tcp -> h ->dstport = hd.dstport;
+    tcp -> h ->src.s_addr = hd.src.s_addr;
+    tcp -> h ->dst.s_addr = hd.dst.s_addr;
+
+    // printf("src: %d\n", tcp -> h->src.s_addr);
+    // printf("src port: %d\n", tcp -> h->srcport);
 
     tcp -> rx = initRingBuffer();
     tcp -> tx = initRingBuffer();
@@ -111,9 +120,13 @@ struct tcpInfo *findTCPQuintuple(struct in_addr src, struct in_addr dst, uint16_
 
         // asd123www: 如果是listen状态就可以创建多个实例?
         // listen需要匹配则在这里更新tcpHeader.
-
         // printf("port: %d %d %d %d\n", srcport, dstport, tcp -> h -> srcport, tcp -> h -> dstport);
         // printf("port: %d %d %d %d\n", src.s_addr, dst.s_addr, tcp -> h -> src.s_addr, tcp -> h -> dst.s_addr);
+
+        // printf("???????????   tcp\n");
+        // printf("state: %d\n", tcp ->tcb.tcpState);
+        // printf("source: %d %d\n", tcp -> h -> src.s_addr, src.s_addr);
+        // printf("port: %d %d\n", tcp -> h -> srcport, srcport);
 
         if (tcp -> h -> dstport == dstport && tcp -> h -> srcport == srcport &&
             tcp -> h -> src.s_addr == src.s_addr && tcp -> h -> dst.s_addr == dst.s_addr) return tcp;
@@ -160,7 +173,6 @@ int pushTCPData(struct tcpInfo *fd, const u_char *buf, int len) {
 }
 
 
-
 int __wrap_fetchTCPData(struct tcpInfo *fd, u_char *buf, int len) {
     if (fd == NULL) return -1; // bad tcp.
     u_char *buffer = ringBufferSendSegment(fd -> rx, len, 0);
@@ -186,8 +198,7 @@ int setTCPPacketReceiveCallback(TCPPacketReceiveCallback callback) {
 int TCPCallback(const void* buf, int len, struct in_addr src, struct in_addr dst) {
     // printf("\n\nReceived packet!!!!!  %d\n\n", TCPchecksum(buf, len));
     if (TCPchecksum(buf, len) != 65535) return -1; // discard the wrong packet.
-
-
+    
     uint16_t srcport = convertInt16PC2Net(*((uint16_t *)buf));
     uint16_t dstport = convertInt16PC2Net(*((uint16_t *)buf + 1));
     // swap(src, dst);
@@ -204,6 +215,9 @@ int TCPCallback(const void* buf, int len, struct in_addr src, struct in_addr dst
     if (dataOffset != 5) return -1; // I don't know how to deal with options.
     
     struct tcpInfo *tcp = findTCPQuintuple(dst, src, dstport, srcport);
+
+    // printf("find tcp connection: %d\n", tcp == NULL);
+
     if (tcp == NULL) return -1;
 
     // for (int i = 0; i < len; ++i)
@@ -363,7 +377,7 @@ void tcpReceiver(struct tcpInfo *tcp, uint32_t seqNumber, uint32_t ackNumber, ui
             }
         }
         break;
-    
+        
     default:
         break;
     }
@@ -398,7 +412,8 @@ int __wrap_TCP2IPSender(struct tcpHeader *h, uint32_t seqNumber, uint32_t ackNum
     u_char *buffer = (u_char *)malloc(len + 20); // no options.
     if (buffer == NULL) return -1;
     memset(buffer, 0, len + 20); // you need to clear the data!!!
-
+    
+    
     // printf("Send TCP packet!\n\n");
 
     *((uint16_t *)buffer) = convertInt16PC2Net(h -> srcport);
@@ -472,7 +487,6 @@ int TcpSlidingWindowSender(struct tcpInfo *tcp, int permBits) {
 
 
 
-
 // enum TCPstate{ 
 //     TCP_TIME_WAIT,	  
 //     TCP_CLOSE_WAIT,  
@@ -495,14 +509,15 @@ void* tcpSender(void *pt) {
             break;
         
         case TCP_SYN_SENT: // sent a connection request, waiting for ack
-            // printf("tcp state: TCP_SYN_SENT\n");
             tmp = clock();
+            // printf("tcp state: TCP_SYN_SENT %ld %ld\n", tmp, tcp -> lastClock);
             // printf("time: %ld %ld\n", tcp ->lastClock, tmp);
-            if (tmp - tcp -> lastClock < tcp -> RTT) { // didn't timeout.
+            if (tmp - tcp -> lastClock < tcp -> RTT && tcp -> lastClock) { // didn't timeout.
                 state = -1; // give up the lock.
             }
             else { // we need to send another syn message.
                 // asd123www: 这里一开始syn的ack是多少？？？？
+                // printf("??????????\n");
                 tcp -> lastClock = tmp;
                 state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.ISS, 0, TCP_SYN, tcp -> tcb.RCV.WND, 0, buf, 0);
                 tcp -> tcb.SND.NXT = tcp -> tcb.SND.ISS + 1;
@@ -520,7 +535,7 @@ void* tcpSender(void *pt) {
             }
             else {
                 tmp = clock();
-                if (tmp - tcp -> lastClock < tcp -> RTT) { // didn't timeout.
+                if (tmp - tcp -> lastClock < tcp -> RTT && tcp -> lastClock) { // didn't timeout.
                     state = -1; // give up the lock.
                 }
                 else { // we need to send another syn message.
@@ -538,7 +553,7 @@ void* tcpSender(void *pt) {
         case TCP_FIN_WAIT1: // our side has shutdown, waiting to complete transmission of remaining buffered data
             // printf("tcp state: TCP_FIN_WAIT1\n");
             tmp = clock();
-            if (tmp - tcp -> lastClock < tcp -> RTT) {
+            if (tmp - tcp -> lastClock < tcp -> RTT && tcp -> lastClock) {
                 state = -1;
             }
             else { // retransmit the FIN.
@@ -557,7 +572,7 @@ void* tcpSender(void *pt) {
         case TCP_CLOSING: // both sides have shutdown but we still have data we have to finish sending
             // printf("tcp state: TCP_CLOSING\n");
             tmp = clock();
-            if (tmp - tcp -> lastClock < tcp -> RTT) {
+            if (tmp - tcp -> lastClock < tcp -> RTT && tcp -> lastClock) {
                 state = -1;
             }
             else { // retransmit the FIN.
@@ -580,17 +595,22 @@ void* tcpSender(void *pt) {
         case TCP_CLOSE_WAIT: // remote side has shutdown and is waiting for us to finish writing our data and to shutdown (we have to close() to move on to LAST_ACK)
             // printf("tcp state: TCP_CLOSE_WAIT\n");
             tmp = clock();
-            tcp -> lastClock = tmp;
-            state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_FIN | TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
-            tcp -> tcb.SND.NXT ++;
-            tcp -> tcb.tcpState = TCP_LAST_ACK;
+            if (!tcp -> wantClose) {
+                state = -1;
+            }
+            else {
+                tcp -> lastClock = tmp;
+                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_FIN | TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
+                tcp -> tcb.SND.NXT ++;
+                tcp -> tcb.tcpState = TCP_LAST_ACK;
+            }
             break;
 
 
         case TCP_LAST_ACK: // out side has shutdown after remote has shutdown.  There may still be data in our buffer that we have to finish sending
             // printf("tcp state: TCP_LAST_ACK\n");
             tmp = clock();
-            if (tmp - tcp -> lastClock < tcp -> RTT) {
+            if (tmp - tcp -> lastClock < tcp -> RTT && tcp -> lastClock) {
                 state = -1;
             }
             else { // retransmit the FIN.
@@ -603,7 +623,7 @@ void* tcpSender(void *pt) {
 
         case TCP_CLOSE:
             // printf("TCP Connection Closed.\n");
-            freeTCPConnect(tcp);
+            // freeTCPConnect(tcp);
             return NULL;
             break;
 
@@ -621,7 +641,7 @@ void* tcpSender(void *pt) {
             }
             else {
                 // printf("time %ld %ld\n", tmp - tcp -> lastClock, tcp -> RTT);
-                if (tmp - tcp -> lastClock > tcp -> RTT) { // timeout
+                if (tmp - tcp -> lastClock > tcp -> RTT && tcp -> lastClock) { // timeout
                     tcp -> tcb.SND.NXT = tcp -> tcb.SND.UNA; // retransmit the first byte.
                 }
 

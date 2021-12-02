@@ -100,7 +100,8 @@ void addDevices() {
     a[3] = '3';
     a[4] = '3';
     a[5] = '\0';
-    sync_printf("state: %d\n\n", addDevice(a));
+    addDevice(a);
+    // sync_printf("state: %d\n\n", addDevice(a));
 
     b[0] = 'v';
     b[1] = 'i';
@@ -109,7 +110,8 @@ void addDevices() {
     b[4] = 'r';
     b[5] = '0';
     b[6] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
 
     b[0] = 'v';
@@ -120,7 +122,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '2';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
 
     b[0] = 'v';
@@ -131,7 +134,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '1';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -141,7 +145,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '3';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -151,7 +156,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '0';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -161,7 +167,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '2';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -171,7 +178,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '4';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
      b[0] = 'v';
     b[1] = 'e';
@@ -181,7 +189,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '3';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
 
     b[0] = 'v';
@@ -192,7 +201,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '5';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -202,7 +212,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '2';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -212,7 +223,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '6';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -222,7 +234,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '5';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -232,7 +245,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '6';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
     b[0] = 'v';
     b[1] = 'e';
@@ -242,7 +256,8 @@ void addDevices() {
     b[5] = '-';
     b[6] = '3';
     b[7] = '\0';
-    sync_printf("state: %d\n\n", addDevice(b));
+    addDevice(b);
+    // sync_printf("state: %d\n\n", addDevice(b));
 
-    sync_printf("------------------------\n\n\n");
+    // sync_printf("------------------------\n\n\n");
 }

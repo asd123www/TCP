@@ -94,7 +94,7 @@ int sendIPPacket(const struct in_addr src, const struct in_addr dest, int proto,
 
     int state = sendFrame(buffer, len + 20, 0x0800, destmac, device); // ether type = 0x0800: ipv4.
 
-    sync_printf("packet send state: %d\n", state);
+    // sync_printf("packet send state: %d\n", state);
     free(destmac);
     free(buffer);
 
@@ -122,6 +122,27 @@ int ipCallbackExample(const void* buf, int len, int device) {
     if (len <= 0) return 0;
     if ((*((u_char *)buf) >> 4) != 0x4) return 0; // check if it's IPv4 packet.
     if (*((u_char *)buf + 9) != 0x06) return 0; // not TCP protocol.
+
+
+
+    // if (uchar2int64Mac(content)  == device_list[device] -> mac) { // the sender is device, so just drop it.
+    //     return 0;
+    // }
+
+    // // 当收到广播包之后你得把它广播出去... 首先不在广播自己发出去的包.
+    // if (uchar2int64Mac(content)  != device_list[device] -> mac) {
+    //     u_char *ip_header =(u_char *)buf + 14; 
+    //     if (*(ip_header + 8) > 1) { // don't broadcast the packet whose TTL is 1.
+    //         // sync_printf("resend broadcast!\n");
+    //         *(ip_header + 8) = *(ip_header + 8) - 1; // TTL - 1
+    //         *(ip_header + 10) = *(ip_header + 10) + 1; // chechsum + 1
+    //         for(int turn_device = 0; turn_device < device_num; ++ turn_device) if (turn_device != device)
+    //             sendFrame(buf + 14, len - 14, 0x0800, buf, turn_device); // broadcast the message.
+    //         *(ip_header + 8) = *(ip_header + 8) + 1; // TTL - 1
+    //         *(ip_header + 10) = *(ip_header + 10) - 1; // chechsum + 1
+    //     }
+    // }
+
     
     struct in_addr src;
     struct in_addr dst;
@@ -130,7 +151,7 @@ int ipCallbackExample(const void* buf, int len, int device) {
 
 
     int size = *((u_char *)buf + 2) << 8 | *((u_char *)buf + 3);
-    assert(size == len);
+    // assert(size == len);
     size -= (*((u_char *)buf) & 15) * 4; // minus the header length.
 
     return TCPPakcetCallback(buf + len - size, size, src, dst);

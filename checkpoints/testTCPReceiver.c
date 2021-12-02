@@ -22,10 +22,16 @@ void* testReceiveTcpPakcet() {
 
     struct tcpInfo* tcp = initiateTCPConnect(hd, LISTEN);
 
+    int N = 100;
+
     char buf[1000];
+
+    for(int i = 0; i < N; ++i) buf[i]= N + i;
 
     // sender for sending ack...
     pthread_t tcp_sender;
+
+    int state = pushTCPData(tcp, buf, N);
     pthread_create(&tcp_sender, NULL, tcpSender, tcp);
 
     int size = 0;
@@ -36,12 +42,12 @@ void* testReceiveTcpPakcet() {
             size += 5;
             printf("Successfully received packet!  %d %d\n", size, calcSize(tcp -> rx ->tail -tcp -> rx ->head ));
             for(int i = 0; i < 5; ++i) printf("%d ", buf[i]);
-            puts("");
+            puts("\n");
         }
         else sleep(1);
 
-        if (size > 200) {
-        //     tcp -> wantClose = 1;
+        if (size == N) {
+            // tcp -> wantClose = 1;
         }
     }
 }
@@ -61,7 +67,7 @@ int main(int argc, char *argv[]) {
 
     pthread_t tcp_receiver;
     pthread_t packet_receiver[10];
-
+    
     sync_printf("device number: %d\n", device_num);
     for(int i = 0; i < device_num; ++i) {
         if (device_list[i] == NULL) continue;

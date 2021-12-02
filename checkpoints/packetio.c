@@ -26,7 +26,6 @@ int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id
         return -1;
     }
 
-
     // for (int i = 0; i < 6; ++i) sync_printf("%02x.", buffer[i]);
     // sync_printf("\n");
 
@@ -114,7 +113,7 @@ int frameCallbackExample(const void *buf, int len, int id) {
     if (uchar2int64Mac((u_char *)buf) == 0xffffffffffffll || 
         uchar2int64Mac((u_char *)buf) == device_list[id] -> mac)  // the mac address matches.
         IPPakcetCallback(buf + 14, len - 14, id);
-
+        
     return 0;
 }
 

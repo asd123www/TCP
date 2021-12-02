@@ -10,7 +10,6 @@ target = tcp testTCPSender testTCPReceiver
 tcp: test.o socket.o tcp.o device.o packetio.o route.o ip.o ringbuffer.o
 	gcc test.o socket.o tcp.o ringbuffer.o ip.o packetio.o route.o device.o -o tcp -lpcap -lpthread
 
-<<<<<<< HEAD
 testTCPSender: testTCPSender.o socket.o tcp.o device.o packetio.o route.o ip.o ringbuffer.o
 	gcc testTCPSender.o socket.o tcp.o ringbuffer.o ip.o packetio.o route.o device.o -o testTCPSender -lpcap -lpthread
 
@@ -22,16 +21,6 @@ testTCPSender.o:
 
 testTCPReceiver.o:
 	gcc -c testTCPReceiver.c -o testTCPReceiver.o
-=======
-tcp.o: tcp.c
-	gcc -c tcp.c -o tcp.o
-
-socket.o: socket.c
-	gcc -c socket.c -o socket.o
-
-ringbuffer.o: ringbuffer.c
-	gcc -c ringbuffer.c -o ringbuffer.o
->>>>>>> 5f1e9fabc9139973354d30ddad1cf962ded26368
 
 test.o: test.c
 	gcc -c test.c -o test.o
@@ -60,8 +49,6 @@ route.o: route.c
 
 ip.o: ip.c
 	gcc -c ip.c -o ip.o
-
-
 
 
 .PHONY: clean

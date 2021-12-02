@@ -22,11 +22,13 @@ void* testSendTcpPakcet() {
 
     struct tcpInfo* tcp = initiateTCPConnect(hd, TCP_SYN_SENT);
 
+
+    int N = 100;
     char buf[1000];
 
     for(int i = 0; i < 999; ++i) buf [i] = i;
 
-    int state = pushTCPData(tcp, buf, 1000);
+    int state = pushTCPData(tcp, buf, 100);
     int size = calcSize(tcp -> tx -> tail - tcp -> tx -> head);
 
     printf("%d\n", size);

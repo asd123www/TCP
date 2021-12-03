@@ -15,7 +15,7 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned long uint64_t;
 
-#define MaxTCPNumber 100
+#define MaxTCPNumber 20
 #define MaxTCPSegment 1460
 
 #define mySocketNumberOffset 123436

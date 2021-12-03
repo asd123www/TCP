@@ -84,7 +84,7 @@ u_char *ringBufferSendSegment(struct ringBuffer *b, int len, int offset) {
 
 void updateRingBufferHead(struct ringBuffer *b, int len) {
     pthread_mutex_lock(&b -> lock);
-    b -> head = (b -> head + len) % maxRingBufferSize;
+    b -> head = (b -> head + len + maxRingBufferSize) % maxRingBufferSize;
     pthread_mutex_unlock(&b -> lock);
 }
 

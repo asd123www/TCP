@@ -54,12 +54,6 @@ int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id
 }
 
 
-
-void *__wrap_callback() {
-
-}
-
-
 /* typedef void (*pcap_handler)(u_char *, const struct pcap_pkthdr *, const u_char *);
  * int pcap_loop(pcap_t *p, int cnt, pcap_handler callback, u_char *user);
  * the first param in pcap_handler is the last param in pcap_loop. 
@@ -92,10 +86,6 @@ int setFrameReceiveCallback(frameReceiveCallback callback, int id) {
         if(state != 1) continue;
 
         // sync_printf("packet received\n");
-        
-        // *space = malloc(3);
-        // pthread_t packet_receiver;
-        // pthread_create(&packet_receiver, NULL, __wrap_callback, NULL);
 
         callback(buf, header -> len, id);
         // sync_printf("packet processed!!!\n");

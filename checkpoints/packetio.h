@@ -8,6 +8,7 @@
 #include <time.h>
 
 #include "device.h"
+
 /**
  * @brief Encapsulate some data into an Ethernet II frame and send it.
  * @param buf Pointer to the payload.

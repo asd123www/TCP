@@ -54,6 +54,12 @@ int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id
 }
 
 
+
+void *__wrap_callback() {
+
+}
+
+
 /* typedef void (*pcap_handler)(u_char *, const struct pcap_pkthdr *, const u_char *);
  * int pcap_loop(pcap_t *p, int cnt, pcap_handler callback, u_char *user);
  * the first param in pcap_handler is the last param in pcap_loop. 
@@ -77,7 +83,7 @@ int setFrameReceiveCallback(frameReceiveCallback callback, int id) {
     struct pcap_pkthdr *header;
     pcap_t *handle;
     open_pcap_dev(&handle, device_list[id] -> name, errbuf);
-
+    
     // int x = PCAP_ERROR;
     // int pcap_set_timeout(pcap_t *p, int to_ms);
 
@@ -86,6 +92,11 @@ int setFrameReceiveCallback(frameReceiveCallback callback, int id) {
         if(state != 1) continue;
 
         // sync_printf("packet received\n");
+        
+        // *space = malloc(3);
+        // pthread_t packet_receiver;
+        // pthread_create(&packet_receiver, NULL, __wrap_callback, NULL);
+
         callback(buf, header -> len, id);
         // sync_printf("packet processed!!!\n");
         // sync_printf("");
@@ -125,9 +136,14 @@ int open_pcap_dev(pcap_t **result, const char* name, char* errbuf) {
         // pcap_set_snaplen(handle, 2048);
         // pcap_set_promisc(handle, 1);
         // pcap_set_timeout(handle, 512);
+        if (pcap_set_buffer_size(handle, (1<<20)) != 0) {
+            printf("set buffer size error.\n");
+            return -1;
+        }
         
         int status;
         status = pcap_activate(handle);
+
         // printf("wrong status: %d\n", status);
 
         // char *err = pcap_geterr(handle);

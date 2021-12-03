@@ -108,7 +108,13 @@ codeinfo:
 	git ls-files | xargs wc -l
 
 test-echo_server: 
-	./echo_server
+	sudo ./echo_server
 
 test-echo_client:
-	./echo_client 10.100.1.2
+	sudo ./echo_client 10.100.1.2
+
+test-perf_server: 
+	sudo ./perf_server
+
+test-perf_client:
+	sudo ./perf_client 10.100.1.2

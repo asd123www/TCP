@@ -59,7 +59,7 @@ struct tcpInfo *initiateTCPConnect(struct tcpHeader hd, int state) {
     }
     pthread_mutex_init(&tcp -> lock, NULL);
     tcp -> lastClock = 0;
-    tcp -> RTT = CLOCKS_PER_SEC * 0.007; // 1.5s
+    tcp -> RTT = CLOCKS_PER_SEC * 2.5; // 1.5s
 
     tcp -> h = (struct tcpHeader *)malloc(sizeof(struct tcpHeader));
     // 直接*(tcp -> h) = hd好像copy不过来第二层...
@@ -220,15 +220,30 @@ int TCPCallback(const void* buf, int len, struct in_addr src, struct in_addr dst
 
     if (tcp == NULL) return -1;
 
-    // for (int i = 0; i < len; ++i)
-    //     printf("%d ", *((u_char *)buf + i));
-    // puts("\n\n");
-    // u_char *buffer = (u_char *)malloc(len - 20);
-    // if (buffer == NULL) return -1;
-    // memcpy(buffer, buf, len - 20);
+    if ((!permBits || permBits == TCP_ACK) && tcp -> tcb.tcpState == TCP_ESTABLISHED) { // fast path.
+        // printf("?????????????????????????\n");
+        if (seqNumber == tcp -> tcb.RCV.NXT) { // is what I want.
+            tcp -> tcb.RCV.NXT += len - 20;
 
-    // another thread.
-    tcpReceiver(tcp, seqNumber, ackNumber, permBits, window, urgentPointer, buf + 20, len - 20); 
+            int state = ringBufferReceiveSegment(tcp -> rx, (u_char *)buf + 20, len - 20);
+            if (state == 0 && len != 20 && ringBufferSize(tcp -> tx) == 0) { //receive, ack. must has content, or it's meaningless.
+                // an old sequence number.
+                // printf("sending ACK.\n");
+                __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
+            }
+        }
+
+        // check the ack for update.
+        if ((permBits & TCP_ACK) && ackNumber != tcp -> tcb.SND.UNA) {
+            updateRingBufferHead(tcp -> tx, (ackNumber - tcp -> tcb.SND.UNA + maxRingBufferSize) % maxRingBufferSize);
+            tcp -> tcb.SND.UNA = ackNumber;
+        }
+    }
+    else { // wait for lock.
+        tcpReceiver(tcp, seqNumber, ackNumber, permBits, window, urgentPointer, buf + 20, len - 20); 
+    }
+    
+    return 0;
 }
 
 
@@ -357,11 +372,6 @@ void tcpReceiver(struct tcpInfo *tcp, uint32_t seqNumber, uint32_t ackNumber, ui
             if (seqNumber == tcp -> tcb.RCV.NXT) { // is what I want.
                 tcp -> tcb.RCV.NXT += len;
 
-                // for (int i = 0; i < len; ++ i) printf("%d ", *((u_char *)receiveBuffer + i));
-                // puts("\n");
-                static int sum = 0;
-                sum += len;
-                // printf("received len: %d\n", sum);
                 state = ringBufferReceiveSegment(tcp -> rx, (u_char *)receiveBuffer, len);
                 if (state == 0 && len != 0) { //receive, ack. must has content, or it's meaningless.
                     // an old sequence number.
@@ -655,6 +665,6 @@ void* tcpSender(void *pt) {
         }
         pthread_mutex_unlock(&tcp -> lock);
 
-        if (state != 0) usleep(5e5); // if nothing the sender did, then sleep for specific time hoping for state change.
+        // if (state != 0) usleep(1e3); // if nothing the sender did, then sleep for specific time hoping for state change.
     }
 }

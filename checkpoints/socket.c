@@ -1,6 +1,4 @@
 
-
-
 #include "socket.h"
 
 void* Socket_packetReceiver(void *p) {
@@ -158,10 +156,10 @@ int __wrap_connect(int socket , const struct sockaddr *address , socklen_t addre
     pthread_t individualTCPSender;
     pthread_create(&individualTCPSender, NULL, tcpSender, addr);
 
-    int times = 20;
+    int times = 20000;
     while (times--) {
         if (addr -> tcb.tcpState == TCP_ESTABLISHED) return 0;
-        usleep(1e6); // wait for some time.
+        usleep(1e3); // wait for some time.
     }
 
     return -1; // time-out.
@@ -212,7 +210,7 @@ int __wrap_accept(int socket , struct sockaddr *address , socklen_t *address_len
                 return tmp;
             }
         }
-        usleep(1e6); // sleep for some time...
+        // usleep(1e3); // sleep for some time...
     }
 
     pthread_mutex_unlock(&p -> lock);
@@ -226,15 +224,16 @@ ssize_t __wrap_read(int fildes, void *buf, size_t nbyte) {
     if (sockNumber == -1) return read(fildes, buf, nbyte);
     if (mapSocket[sockNumber].type != 2) return -1; //not write to the tcp.
     struct tcpInfo *tcp = (struct tcpInfo *)mapSocket[sockNumber].addr;
-    int times = 500; // times/100 seconds.
-    while (times --) {
+    // int times = 500; // times/100 seconds.
+    while (1) {
         int size = ringBufferSize(tcp -> rx);
         if (size) {
             int state = fetchTCPData(tcp, buf, min(size, nbyte));
             // printf("read %d\n", state);
             if (state != -1) return state;
         }
-        usleep(1e4);
+        if (tcp -> tcb.tcpState != TCP_ESTABLISHED) break;
+        // usleep(1e3);
     }
     return 0; // fetchTCPData(tcp, buf, nbyte);
 }
@@ -251,15 +250,23 @@ ssize_t __wrap_write(int fildes, const void *buf, size_t nbyte) {
     return pushTCPData(tcp, buf, nbyte);
 }
 
-
 // deallocate the file descriptor indicated by fildes
 int __wrap_close(int fildes) {
     int sockNumber = maintainSocketDescriptor(fildes);
     if (sockNumber == -1) return close(fildes);
 
     if (mapSocket[sockNumber].type == 2) { // tcp connection.
+        // connection oriented, wait for data to be transmitted.
+
+        // printf("???????\n");
+        while (ringBufferSize(((struct tcpInfo *)mapSocket[sockNumber].addr) -> tx) != 0) {
+            // usleep(1e3);
+        }
+
         ((struct tcpInfo *)mapSocket[sockNumber].addr) -> wantClose = 1;
-        while (((struct tcpInfo *)mapSocket[sockNumber].addr) -> tcb.tcpState != TCP_CLOSE) usleep(1e5);
+        while (((struct tcpInfo *)mapSocket[sockNumber].addr) -> tcb.tcpState != TCP_CLOSE) {
+            // usleep(1e3);
+        }
 
         freeTCPConnect((struct tcpInfo *)mapSocket[sockNumber].addr);
         mapSocket[sockNumber].type = 0;

@@ -16,11 +16,11 @@ typedef unsigned int uint32_t;
 typedef unsigned long uint64_t;
 
 #define MaxTCPNumber 100
-#define MaxTCPSegment 500
+#define MaxTCPSegment 1460
 
 #define mySocketNumberOffset 123436
 
-#define INITIAL_WINDOW_SIZE 10000
+#define INITIAL_WINDOW_SIZE 65535
 
 #define TCP_URG 32
 #define TCP_ACK 16

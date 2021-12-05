@@ -111,10 +111,10 @@ test-echo_server:
 	sudo ./echo_server
 
 test-echo_client:
-	sudo ./echo_client 10.100.1.2
+	sudo ./echo_client 10.100.3.2
 
 test-perf_server: 
 	sudo ./perf_server
 
 test-perf_client:
-	sudo ./perf_client 10.100.1.2
+	sudo ./perf_client 10.100.3.2

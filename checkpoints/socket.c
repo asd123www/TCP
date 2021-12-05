@@ -258,12 +258,13 @@ int __wrap_close(int fildes) {
     if (mapSocket[sockNumber].type == 2) { // tcp connection.
         // connection oriented, wait for data to be transmitted.
 
-        // printf("???????\n");
+
         while (ringBufferSize(((struct tcpInfo *)mapSocket[sockNumber].addr) -> tx) != 0) {
             // usleep(1e3);
         }
 
         ((struct tcpInfo *)mapSocket[sockNumber].addr) -> wantClose = 1;
+
         while (((struct tcpInfo *)mapSocket[sockNumber].addr) -> tcb.tcpState != TCP_CLOSE) {
             // usleep(1e3);
         }

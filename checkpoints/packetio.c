@@ -14,6 +14,11 @@
  *   +---------------------+---------------------+---------------+------+----------------+
  */
 int sendFrame(const void* buf, int len, int ethtype, const void* destmac, int id) {
+
+    // emulate lossy channel.
+    if (rand()%5 < 2) return 0;
+
+
     char errbuf[PCAP_ERRBUF_SIZE];
 
     pcap_t *handle;
@@ -110,7 +115,11 @@ int frameCallbackExample(const void *buf, int len, int id) {
     // rep(i,6,11) printf("%02x.", *((u_char *)buf+i));
     // puts("");
     // uchar2int64Mac(content)  != device_list[device] -> mac
+    if (uchar2int64Mac((u_char *)buf + 6)  == device_list[id] -> mac) { // the sender is device, so just drop it.
+        return 0;
+    }
 
+    // printf("received packet. %ld \n", uchar2int64Mac((u_char *)buf));
     if (uchar2int64Mac((u_char *)buf) == 0xffffffffffffll || 
         uchar2int64Mac((u_char *)buf) == device_list[id] -> mac)  // the mac address matches.
         IPPakcetCallback(buf + 14, len - 14, id);

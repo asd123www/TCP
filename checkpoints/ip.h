@@ -15,6 +15,8 @@
 
 int subnet_num;
 
+#define routePackets 1
+
 // .h header file: declare
 extern pthread_mutex_t setRoutingTableLock;
 

@@ -59,7 +59,7 @@ struct tcpInfo *initiateTCPConnect(struct tcpHeader hd, int state) {
     }
     pthread_mutex_init(&tcp -> lock, NULL);
     tcp -> lastClock = 0;
-    tcp -> RTT = CLOCKS_PER_SEC * 2.5; // 1.5s
+    tcp -> RTT = CLOCKS_PER_SEC * 1.5; // 1.5s
 
     tcp -> h = (struct tcpHeader *)malloc(sizeof(struct tcpHeader));
     // 直接*(tcp -> h) = hd好像copy不过来第二层...
@@ -220,27 +220,29 @@ int TCPCallback(const void* buf, int len, struct in_addr src, struct in_addr dst
 
     if (tcp == NULL) return -1;
 
-    if ((!permBits || permBits == TCP_ACK) && tcp -> tcb.tcpState == TCP_ESTABLISHED) { // fast path.
-        if (seqNumber == tcp -> tcb.RCV.NXT) { // is what I want.
-            tcp -> tcb.RCV.NXT += len - 20;
+    // if (tcp -> tcb.tcpState == TCP_ESTABLISHED && ackNumber - tcp ->tcb.SND.UNA > INITIAL_WINDOW_SIZE) return 0; // not the packet I want.
 
-            int state = ringBufferReceiveSegment(tcp -> rx, (u_char *)buf + 20, len - 20);
-            if (state == 0 && len != 20 && tcp -> tx->head == tcp -> tx->tail) { //receive, ack. must has content, or it's meaningless.
-                // an old sequence number.
-                // printf("sending ACK.\n");
-                __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
-            }
-        }
+    // if ((!permBits || permBits == TCP_ACK) && tcp -> tcb.tcpState == TCP_ESTABLISHED) { // fast path.
+    //     if (seqNumber == tcp -> tcb.RCV.NXT) { // is what I want.
+    //         tcp -> tcb.RCV.NXT += len - 20;
 
-        // check the ack for update.
-        if ((permBits & TCP_ACK) && ackNumber != tcp -> tcb.SND.UNA) {
-            updateRingBufferHead(tcp -> tx, ackNumber - tcp -> tcb.SND.UNA);
-            tcp -> tcb.SND.UNA = ackNumber;
-        }
-    }
-    else { // wait for lock.
-        tcpReceiver(tcp, seqNumber, ackNumber, permBits, window, urgentPointer, buf + 20, len - 20); 
-    }
+    //         int state = ringBufferReceiveSegment(tcp -> rx, (u_char *)buf + 20, len - 20);
+    //         if (state == 0 && len != 20 && tcp -> tx->head == tcp -> tx->tail) { //receive, ack. must has content, or it's meaningless.
+    //             // an old sequence number.
+    //             // printf("sending ACK.\n");
+    //             __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
+    //         }
+    //     }
+
+    //     // check the ack for update.
+    //     if ((permBits & TCP_ACK) && ackNumber != tcp -> tcb.SND.UNA) {
+    //         updateRingBufferHead(tcp -> tx, ackNumber - tcp -> tcb.SND.UNA);
+    //         tcp -> tcb.SND.UNA = ackNumber;
+    //     }
+    // }
+    // else { // wait for lock.
+    tcpReceiver(tcp, seqNumber, ackNumber, permBits, window, urgentPointer, buf + 20, len - 20); 
+    // }
 
     return 0;
 }
@@ -320,6 +322,9 @@ void tcpReceiver(struct tcpInfo *tcp, uint32_t seqNumber, uint32_t ackNumber, ui
 
     case TCP_FIN_WAIT2: // all buffered data sent, waiting for remote to shutdown
         if (permBits & TCP_FIN) {
+            if (ackNumber != tcp -> tcb.SND.NXT) break; // acknumber wrong.
+            if (ackNumber - tcp ->tcb.SND.UNA > INITIAL_WINDOW_SIZE) return; // not the packet I want.
+            
             tcp -> tcb.RCV.NXT = seqNumber + 1;
             tcp -> tcb.SND.WND = windowSize;
 
@@ -341,6 +346,12 @@ void tcpReceiver(struct tcpInfo *tcp, uint32_t seqNumber, uint32_t ackNumber, ui
                         // or CLOSING.  Required because the other end may not have gotten our last ACK causing it
                         // to retransmit the data packet (which we ignore)
         // just drop the packet...
+        if (permBits & TCP_FIN) { // your sent ack may lost in network, so if you receive another FIN, the packet is lost.
+            tcp -> lastClock = clock();
+            tcp -> wantClose = 1;
+            // send the old sequence number.
+            __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
+        }
         break;
     case TCP_CLOSE_WAIT: // remote side has shutdown and is waiting for us to finish writing our data and to shutdown (we have to close() to move on to LAST_ACK)
         break;
@@ -358,21 +369,26 @@ void tcpReceiver(struct tcpInfo *tcp, uint32_t seqNumber, uint32_t ackNumber, ui
         
 
     case TCP_ESTABLISHED: // connection established
+        // printf("TCP_ESTABLISHED\n");
         if (permBits & TCP_FIN) { // 怎么
             tcp -> tcb.RCV.NXT = seqNumber + 1;
             tcp -> lastClock = clock();
             __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
-            tcp -> tcb.SND.NXT ++;
+            // tcp -> tcb.SND.NXT ++;
             tcp -> tcb.tcpState = TCP_CLOSE_WAIT;
         }
-        else { // ordinary.
+
+        if(permBits & TCP_ACK) { // ordinary.
             // printf("Received data!\n");
+            if (ackNumber - tcp ->tcb.SND.UNA > INITIAL_WINDOW_SIZE) return; // not the packet I want.
+
             tcp -> tcb.SND.WND = windowSize; 
             if (seqNumber == tcp -> tcb.RCV.NXT) { // is what I want.
                 tcp -> tcb.RCV.NXT += len;
 
                 state = ringBufferReceiveSegment(tcp -> rx, (u_char *)receiveBuffer, len);
-                if (state == 0 && len != 0 && ringBufferSize(tcp -> tx) == 0) {//receive, ack. must has content, or it's meaningless.
+                if (state == 0 && len != 0) {
+                // && ringBufferSize(tcp -> tx) == 0) {//receive, ack. must has content, or it's meaningless.
                     // an old sequence number.
                     // printf("sending ACK.\n");
                     __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
@@ -538,7 +554,7 @@ void* tcpSender(void *pt) {
             if (tcp -> wantClose == 1) {
                 // 发送FIN.
                 tcp -> lastClock = tmp;
-                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_FIN, tcp -> tcb.RCV.WND, 0, buf, 0);
+                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_FIN | TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
                 tcp -> tcb.SND.NXT ++;
                 tcp -> tcb.tcpState = TCP_FIN_WAIT1;
             }
@@ -569,7 +585,7 @@ void* tcpSender(void *pt) {
                 // 发送FIN.
                 tcp -> lastClock = tmp;
                 // send the old sequence number (the FIN).
-                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_FIN, tcp -> tcb.RCV.WND, 0, buf, 0);
+                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT - 1, tcp -> tcb.RCV.NXT, TCP_FIN | TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
             }
             break;
 
@@ -588,7 +604,7 @@ void* tcpSender(void *pt) {
                 // 发送FIN.
                 tcp -> lastClock = tmp;
                 // send ACK, old sequence number.
-                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
+                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT - 1, tcp -> tcb.RCV.NXT, TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
             }
             break;
 
@@ -596,16 +612,25 @@ void* tcpSender(void *pt) {
                            // or CLOSING.  Required because the other end may not have gotten our last ACK causing it
                            // to retransmit the data packet (which we ignore)
             // printf("tcp state: TCP_TIME_WAIT\n");
-            usleep(2 * tcp -> RTT); // use RTT to estimate max...
-            tcp -> tcb.tcpState = TCP_CLOSE;
-            state = 0;
+            if (tcp -> wantClose != 2) {
+                state = 2;
+                tcp -> wantClose = 2;
+            }
+            else {//  (tcp -> wantClose == 2) {
+                tcp -> tcb.tcpState = TCP_CLOSE;
+                state = 0;
+            }
             break;
 
         case TCP_CLOSE_WAIT: // remote side has shutdown and is waiting for us to finish writing our data and to shutdown (we have to close() to move on to LAST_ACK)
-            // printf("tcp state: TCP_CLOSE_WAIT\n");
+            // printf("tcp state: TCP_CLOSE_WAIT %d\n",  ringBufferSize(tcp -> tx));
             tmp = clock();
             if (!tcp -> wantClose) {
                 state = -1;
+            }
+            else if (tmp - tcp -> lastClock >= tcp ->RTT) {
+                tcp -> lastClock = tmp;
+                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
             }
             else {
                 tcp -> lastClock = tmp;
@@ -625,7 +650,7 @@ void* tcpSender(void *pt) {
             else { // retransmit the FIN.
                 // 发送FIN.
                 tcp -> lastClock = tmp;
-                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_FIN, tcp -> tcb.RCV.WND, 0, buf, 0);
+                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT - 1, tcp -> tcb.RCV.NXT, TCP_FIN | TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
             }
             break;
 
@@ -644,7 +669,7 @@ void* tcpSender(void *pt) {
             if (tcp -> wantClose == 1) {
                 // 发送FIN.
                 tcp -> lastClock = tmp;
-                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_FIN, tcp -> tcb.RCV.WND, 0, buf, 0);
+                state = __wrap_TCP2IPSender(tcp -> h, tcp -> tcb.SND.NXT, tcp -> tcb.RCV.NXT, TCP_FIN | TCP_ACK, tcp -> tcb.RCV.WND, 0, buf, 0);
                 tcp -> tcb.SND.NXT ++;
                 tcp -> tcb.tcpState = TCP_FIN_WAIT1;
             }
@@ -663,6 +688,11 @@ void* tcpSender(void *pt) {
             break;
         }
         pthread_mutex_unlock(&tcp -> lock);
+
+
+        if (state == 2) {
+            usleep(5*tcp -> RTT); // use RTT to estimate max... no packet received during 2*RTT.
+        }
 
         //if (state != 0) 
         // usleep(1e4); // if nothing the sender did, then sleep for specific time hoping for state change.
